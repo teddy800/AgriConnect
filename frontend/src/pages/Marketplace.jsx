@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { MapPin, Plus, Sprout } from 'lucide-react';
+import { MapPin, Plus, Sprout, Wifi, WifiOff } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
+import { useMarketplaceUpdates } from '../hooks/useWebSocket.js';
 import { etb, num } from '../utils.js';
 import { CropThumb } from '../components/ui.jsx';
 
@@ -18,6 +19,33 @@ export default function Marketplace() {
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [newListingAlert, setNewListingAlert] = useState(null);
+
+  // WebSocket real-time listing updates
+  const handleNewListing = useCallback((listing) => {
+    console.log('🆕 New listing:', listing);
+    
+    // Show alert
+    setNewListingAlert(listing);
+    setTimeout(() => setNewListingAlert(null), 5000);
+    
+    // Show notification
+    if (Notification.permission === 'granted') {
+      new Notification('New Listing Available', {
+        body: `${listing.crop} - ${listing.quantity} ${listing.unit} at ${listing.price} ETB`,
+        icon: '/favicon.ico'
+      });
+    }
+    
+    // Reload listings
+    const qs = new URLSearchParams(Object.entries(fl).filter(([, v]) => v));
+    api.get('/listings?' + qs).then(setItems);
+  }, [fl]);
+
+  const { isConnected } = useMarketplaceUpdates(
+    { regionId: fl.region_id, cropId: fl.crop_id },
+    handleNewListing
+  );
 
   useEffect(() => {
     Promise.all([api.get('/crops'), api.get('/regions')]).then(([c, r]) => { setCrops(c); setRegions(r); });
@@ -44,11 +72,17 @@ export default function Marketplace() {
     <>
       <div className="page-head">
         <div>
-          <h1>Marketplace</h1>
-          <p className="muted">Find and buy quality agricultural produce from trusted farmers across Ethiopia.</p>
+          <h1>Marketplace {isConnected ? <Wifi size={20} color="#1B7F3B" style={{ marginLeft: 8, verticalAlign: 'middle' }} /> : <WifiOff size={20} color="#999" style={{ marginLeft: 8, verticalAlign: 'middle' }} />}</h1>
+          <p className="muted">Find and buy quality agricultural produce from trusted farmers across Ethiopia. {isConnected && <span style={{ color: '#1B7F3B' }}>● Live updates active</span>}</p>
         </div>
         {user.role === 'farmer' && <Link to="/listings/new" className="btn primary"><Plus size={16} /> Sell Produce</Link>}
       </div>
+
+      {newListingAlert && (
+        <div className="card" style={{ background: '#E8F5E9', border: '1px solid #1B7F3B', padding: '12px', marginBottom: '16px' }}>
+          <strong>🆕 New Listing!</strong> {newListingAlert.crop} - {newListingAlert.quantity} {newListingAlert.unit} at {newListingAlert.price} ETB from {newListingAlert.region}
+        </div>
+      )}
 
       <div className="card filters">
         <div className="field"><label>Search</label><input value={fl.search} onChange={set('search')} placeholder="Search crops..." /></div>

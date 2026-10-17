@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wifi, WifiOff } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
+import { usePriceUpdates } from '../hooks/useWebSocket.js';
 import { etb, num } from '../utils.js';
 
 const COLORS = ['#1B7F3B', '#2F6FDE', '#D99A1B', '#8A4FD6', '#D9534F', '#0E9AA7'];
@@ -52,6 +53,24 @@ export default function Prices() {
   const [tick, setTick] = useState(0);
   const crop = sp.get('crop') || '';
 
+  // WebSocket real-time price updates
+  const handlePriceUpdate = useCallback((data) => {
+    console.log('📈 Real-time price update:', data);
+    
+    // Show notification
+    if (Notification.permission === 'granted') {
+      new Notification('Price Update', {
+        body: `New price recorded: ${data.price} ETB`,
+        icon: '/favicon.ico'
+      });
+    }
+    
+    // Refresh data
+    setTick(t => t + 1);
+  }, []);
+
+  const { isConnected } = usePriceUpdates(crop ? [parseInt(crop)] : [], handlePriceUpdate);
+
   useEffect(() => {
     api.get('/crops').then(c => {
       setCrops(c);
@@ -79,8 +98,8 @@ export default function Prices() {
     <>
       <div className="page-head">
         <div>
-          <h1>Market Prices</h1>
-          <p className="muted">Track crop prices and market trends across Ethiopian regions.</p>
+          <h1>Market Prices {isConnected ? <Wifi size={20} color="#1B7F3B" style={{ marginLeft: 8, verticalAlign: 'middle' }} /> : <WifiOff size={20} color="#999" style={{ marginLeft: 8, verticalAlign: 'middle' }} />}</h1>
+          <p className="muted">Track crop prices and market trends across Ethiopian regions. {isConnected && <span style={{ color: '#1B7F3B' }}>● Live updates active</span>}</p>
         </div>
       </div>
 

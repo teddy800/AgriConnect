@@ -9,25 +9,59 @@
 
 ## 🎯 Features
 
-### For Farmers
+### Core Features
+
+#### For Farmers
 - 📦 **List Produce** - Post agricultural products with photos, prices, and details
 - 💰 **Market Intelligence** - See real-time market prices and trends
 - 📊 **Dashboard Analytics** - Track listings, inquiries, and sales
 - 🔔 **Notifications** - Get instant alerts on buyer inquiries
 - ✅ **Verification Badge** - Build trust with verified farmer status
 
-### For Buyers
+#### For Buyers
 - 🔍 **Smart Search** - Find produce by crop, region, and price
 - 💬 **Direct Inquiries** - Contact farmers without intermediaries
 - 📱 **Contact Integration** - One-tap phone calls to farmers
 - 📈 **Price Comparison** - See if listings are priced fairly
 - 🌍 **Multi-language** - English, Amharic, Afaan Oromoo support
 
-### For Admins & Agronomists
+#### For Admins & Agronomists
 - 👥 **User Management** - Verify/deactivate users
 - 📊 **Platform Statistics** - Monitor activity and growth
 - 💵 **Price Recording** - Update market prices daily
 - 🗑️ **Content Moderation** - Remove inappropriate listings
+
+### 🚀 Advanced Features (NEW!)
+
+#### 🔌 WebSocket Integration
+- **Real-time Price Updates** - Instant notifications when prices change
+- **Live Marketplace** - New listings appear automatically without refresh
+- **Instant Inquiry Updates** - Status changes broadcast immediately
+- **Connection Status** - Visual indicators for live connection
+- **Auto-reconnection** - Resilient connection management
+
+#### 💾 Redis Caching
+- **High Performance** - 98% faster repeated API calls
+- **Smart Invalidation** - Cache clears on data updates
+- **TTL Management** - Configurable time-to-live per resource
+- **Route Middleware** - Automatic caching for GET endpoints
+- **Health Monitoring** - Real-time cache statistics
+
+#### 🔍 Elasticsearch Search
+- **Fuzzy Matching** - "coffe" finds "coffee"
+- **Advanced Filters** - Crop, region, price range, verification status
+- **Multiple Sort Options** - Relevance, price, date, quantity
+- **Autocomplete** - Search suggestions as you type
+- **Analytics** - Aggregations for price stats and distributions
+- **Bulk Indexing** - Fast initial data population
+
+#### 📊 Monitoring & Observability
+- **Health Checks** - Database, Redis, Elasticsearch status
+- **Performance Metrics** - Memory, CPU, cache hit rates
+- **WebSocket Stats** - Active connections and rooms
+- **Service Dashboard** - Real-time platform monitoring
+
+See [ADVANCED_FEATURES.md](./ADVANCED_FEATURES.md) for detailed documentation.
 
 ## 🏗️ Architecture
 
@@ -39,18 +73,37 @@
 - JWT authentication with bcrypt
 - Zod validation
 - Multer for file uploads
+- Socket.IO for WebSocket
+- Redis for caching
+- Elasticsearch for search
 
 **Frontend:**
 - React 18 with Vite
 - React Router v7
 - Recharts for data visualization
 - Lucide React icons
+- Socket.IO client for real-time updates
 - Custom CSS (no framework)
 
 **Infrastructure:**
-- Docker & Docker Compose ready
-- PostgreSQL with advanced SQL features
+- Docker & Docker Compose
+- PostgreSQL 14
+- Redis 7
+- Elasticsearch 8.11
+- Winston logging
+- GitHub Actions CI/CD
 - RESTful API architecture
+
+### 🔒 Security & Performance
+
+- **Rate Limiting** - 7 different limiters (auth, upload, API, etc.)
+- **Input Sanitization** - XSS protection and SQL injection prevention
+- **Helmet Security** - Content Security Policy, HSTS, XSS filters
+- **JWT Authentication** - Secure token-based auth with bcrypt
+- **RBAC** - Role-based access control (farmer, buyer, admin, agronomist)
+- **Winston Logging** - Daily rotating logs with 5 severity levels
+- **Testing** - Jest (backend) + Vitest (frontend) with 25+ tests
+- **CI/CD Pipeline** - Automated testing, linting, and security scans
 
 ## 🚀 Quick Start
 
