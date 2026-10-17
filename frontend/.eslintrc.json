@@ -1,7 +1,7 @@
 {
   "env": {
     "browser": true,
-    "es2022": true
+    "es2021": true
   },
   "extends": [
     "eslint:recommended",
@@ -16,17 +16,17 @@
       "jsx": true
     }
   },
+  "plugins": ["react", "react-hooks", "react-refresh"],
+  "rules": {
+    "react/prop-types": "off",
+    "react-refresh/only-export-components": "warn",
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
+  },
   "settings": {
     "react": {
       "version": "detect"
     }
-  },
-  "plugins": ["react", "react-hooks"],
-  "rules": {
-    "react/prop-types": "off",
-    "react/react-in-jsx-scope": "off",
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-    "prefer-const": "error",
-    "no-console": ["warn", { "allow": ["warn", "error"] }]
   }
 }
