@@ -1,11 +1,17 @@
 import 'dotenv/config';
 import express from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import logger, { httpLogger, stream } from './utils/logger.js';
 import { generalLimiter, authLimiter } from './middleware/rateLimiter.js';
 import { sanitizeAll, validateNoSQLInjection } from './middleware/sanitizer.js';
+
+// Import advanced utilities
+import { initializeRedis, closeRedis } from './utils/cache.js';
+import { initializeElasticsearch, closeElasticsearch } from './utils/elasticsearch.js';
+import { initializeWebSocket } from './websocket/socketServer.js';
 
 // Import routes
 import authRoutes from './routes/auth.js';
@@ -18,8 +24,20 @@ import notifications from './routes/notifications.js';
 import admin from './routes/admin.js';
 import dashboard from './routes/dashboard.js';
 import monitoring from './routes/monitoring.js';
+import search from './routes/search.js';
 
 const app = express();
+const httpServer = createServer(app);
+
+// Initialize WebSocket server
+let io = null;
+if (process.env.WEBSOCKET_ENABLED !== 'false') {
+  io = initializeWebSocket(httpServer);
+  logger.info('✅ WebSocket server initialized');
+}
+
+// Make io available to routes
+app.set('io', io);
 
 // ============================================
 // Security Middleware
@@ -103,6 +121,7 @@ app.use('/api/notifications', notifications);
 app.use('/api/admin', admin);
 app.use('/api/dashboard', dashboard);
 app.use('/api/monitoring', monitoring);
+app.use('/api/search', search);
 
 // ============================================
 // 404 Handler
@@ -151,49 +170,101 @@ app.use((err, req, res, _next) => {
 });
 
 // ============================================
+// Initialize Advanced Services
+// ============================================
+async function initializeServices() {
+  try {
+    // Initialize Redis cache
+    await initializeRedis();
+    
+    // Initialize Elasticsearch
+    await initializeElasticsearch();
+    
+    logger.info('✅ All advanced services initialized');
+  } catch (error) {
+    logger.error('Service initialization error', { error: error.message });
+    // Continue anyway - services are optional
+  }
+}
+
+// ============================================
 // Start Server
 // ============================================
 const PORT = process.env.PORT || 4000;
 
-const server = app.listen(PORT, () => {
-  logger.info('AgriConnect API Server Started', {
-    port: PORT,
-    environment: process.env.NODE_ENV || 'development',
-    nodeVersion: process.version
-  });
+// Initialize services then start server
+initializeServices().then(() => {
+  httpServer.listen(PORT, () => {
+    logger.info('AgriConnect API Server Started', {
+      port: PORT,
+      environment: process.env.NODE_ENV || 'development',
+      nodeVersion: process.version,
+      features: {
+        websocket: io !== null,
+        redis: process.env.REDIS_ENABLED === 'true',
+        elasticsearch: process.env.ELASTICSEARCH_ENABLED === 'true'
+      }
+    });
 
-  console.log('');
-  console.log('🌾 ==========================================');
-  console.log('   AgriConnect API Server');
-  console.log('🌾 ==========================================');
-  console.log(`   🚀 Server running on port ${PORT}`);
-  console.log(`   🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`   📡 API: http://localhost:${PORT}/api`);
-  console.log(`   ❤️  Health: http://localhost:${PORT}/api/health`);
-  console.log(`   🔒 Security: Helmet, Rate Limiting, XSS Protection`);
-  console.log(`   📝 Logging: Winston (logs/)`);
-  console.log('🌾 ==========================================');
-  console.log('');
+    console.log('');
+    console.log('🌾 ==========================================');
+    console.log('   AgriConnect API Server');
+    console.log('🌾 ==========================================');
+    console.log(`   🚀 Server running on port ${PORT}`);
+    console.log(`   🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`   📡 API: http://localhost:${PORT}/api`);
+    console.log(`   ❤️  Health: http://localhost:${PORT}/api/health`);
+    console.log(`   🔒 Security: Helmet, Rate Limiting, XSS Protection`);
+    console.log(`   📝 Logging: Winston (logs/)`);
+    console.log('');
+    console.log('   🚀 ADVANCED FEATURES:');
+    console.log(`   ${io ? '✅' : '❌'} WebSocket - Real-time updates`);
+    console.log(`   ${process.env.REDIS_ENABLED === 'true' ? '✅' : '❌'} Redis - High-performance caching`);
+    console.log(`   ${process.env.ELASTICSEARCH_ENABLED === 'true' ? '✅' : '❌'} Elasticsearch - Advanced search`);
+    console.log('🌾 ==========================================');
+    console.log('');
+  });
+}).catch(error => {
+  logger.error('Failed to start server', { error: error.message });
+  process.exit(1);
 });
 
 // ============================================
 // Graceful Shutdown
 // ============================================
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM signal received: closing HTTP server');
-  server.close(() => {
+async function gracefulShutdown(signal) {
+  logger.info(`${signal} signal received: closing server and connections`);
+  
+  // Close HTTP server
+  httpServer.close(async () => {
     logger.info('HTTP server closed');
+    
+    // Close WebSocket connections
+    if (io) {
+      io.close(() => {
+        logger.info('WebSocket connections closed');
+      });
+    }
+    
+    // Close Redis connection
+    await closeRedis();
+    
+    // Close Elasticsearch connection
+    await closeElasticsearch();
+    
+    logger.info('All connections closed gracefully');
     process.exit(0);
   });
-});
+  
+  // Force close after 10 seconds
+  setTimeout(() => {
+    logger.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+}
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT signal received: closing HTTP server');
-  server.close(() => {
-    logger.info('HTTP server closed');
-    process.exit(0);
-  });
-});
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // ============================================
 // Export App for Testing

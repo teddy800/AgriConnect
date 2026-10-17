@@ -25,6 +25,46 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: agriconnect-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - agriconnect-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: agriconnect-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - agriconnect-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   # Backend API
   backend:
     build:
@@ -45,11 +85,22 @@ services:
       JWT_SECRET: ${JWT_SECRET:-agriconnect-production-secret-change-this}
       JWT_EXPIRES_IN: 7d
       CORS_ORIGIN: http://localhost:5173
+      # Advanced Features
+      WEBSOCKET_ENABLED: "true"
+      REDIS_ENABLED: "true"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ELASTICSEARCH_ENABLED: "true"
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     volumes:
       - ./backend/uploads:/app/uploads
       - ./backend/logs:/app/logs
     depends_on:
       database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
         condition: service_healthy
     networks:
       - agriconnect-network
@@ -75,6 +126,10 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
     driver: local
 
 networks:

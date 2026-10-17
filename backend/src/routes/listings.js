@@ -2,6 +2,10 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { q } from '../db.js';
 import { auth, role } from '../middleware/auth.js';
+import { broadcastNewListing } from '../websocket/socketServer.js';
+import { indexListing } from '../utils/elasticsearch.js';
+import { invalidateResource } from '../utils/cache.js';
+import logger from '../utils/logger.js';
 
 const r = Router();
 
@@ -77,6 +81,33 @@ r.post('/', auth, role('farmer'), async (req, res) => {
     [req.user.id, d.crop_id, d.title, d.description, d.quantity, d.unit,
      d.price_per_unit, d.region_id, d.location_detail, d.harvest_date || null, d.image_urls]
   );
+
+  // Get full listing details with joins
+  const [fullListing] = await q(
+    `SELECT l.*, c.name_en AS crop, rg.name AS region, u.full_name AS farmer
+     FROM listings l
+     JOIN crops c ON c.id=l.crop_id
+     JOIN regions rg ON rg.id=l.region_id
+     JOIN users u ON u.id=l.farmer_id
+     WHERE l.id=$1`, [l.id]
+  );
+
+  // Broadcast via WebSocket
+  const io = req.app.get('io');
+  if (io) {
+    broadcastNewListing(io, fullListing);
+  }
+
+  // Index in Elasticsearch
+  indexListing(fullListing).catch(err => 
+    logger.error('Failed to index listing', { error: err.message })
+  );
+
+  // Invalidate cache
+  invalidateResource('listings', l.id).catch(err =>
+    logger.error('Failed to invalidate cache', { error: err.message })
+  );
+
   res.status(201).json(l);
 });
 
@@ -105,6 +136,14 @@ r.patch('/:id/status', auth, role('farmer'), async (req, res) => {
   const [l] = await q(
     'UPDATE listings SET status=$1, updated_at=NOW() WHERE id=$2 AND farmer_id=$3 RETURNING *',
     [status, req.params.id, req.user.id]);
+
+  if (l) {
+    // Invalidate cache
+    invalidateResource('listings', l.id).catch(err =>
+      logger.error('Failed to invalidate cache', { error: err.message })
+    );
+  }
+
   l ? res.json(l) : res.status(404).json({ error: 'Listing not found.' });
 });
 
