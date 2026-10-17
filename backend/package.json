@@ -1,11 +1,29 @@
 {
   "name": "agriconnect-backend",
   "version": "1.0.0",
+  "description": "AgriConnect Backend API - Agricultural marketplace platform",
   "type": "module",
+  "main": "src/server.js",
   "scripts": {
     "dev": "node --watch src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:setup": "psql -U postgres -d agriconnect -f db/schema.sql && psql -U postgres -d agriconnect -f db/seed.sql",
+    "db:reset": "psql -U postgres -c \"DROP DATABASE IF EXISTS agriconnect;\" && psql -U postgres -c \"CREATE DATABASE agriconnect;\" && npm run db:setup",
+    "db:seed-prices": "psql -U postgres -d agriconnect -f db/seed2.sql"
   },
+  "keywords": [
+    "agriculture",
+    "marketplace",
+    "ethiopia",
+    "farmers",
+    "api",
+    "nodejs",
+    "express",
+    "postgresql"
+  ],
+  "author": "AgriConnect Team",
+  "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -16,5 +34,10 @@
     "pg": "^8.12.0",
     "telegraf": "^4.16.3",
     "zod": "^3.23.8"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }

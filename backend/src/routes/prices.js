@@ -1,3 +1,9 @@
+import { Router } from 'express';
+import { q } from '../db.js';
+import { auth, role } from '../middleware/auth.js';
+
+const r = Router();
+
 // All markets, one crop, daily prices (for the multi-line chart)
 r.get('/series', async (req, res) => {
   const { crop_id, days = 7 } = req.query;
@@ -27,3 +33,35 @@ r.get('/table', async (req, res) => {
        ORDER BY recorded_on DESC LIMIT 1) o ON TRUE
      ORDER BY l.price DESC`, [crop_id]));
 });
+
+// Record a new market price (admin/agronomist only)
+r.post('/', auth, role('admin', 'agronomist'), async (req, res) => {
+  const { crop_id, market_id, price, unit = 'quintal', recorded_on } = req.body;
+
+  if (!crop_id || !market_id || !price) {
+    return res.status(400).json({ error: 'crop_id, market_id, and price are required.' });
+  }
+
+  if (price <= 0) {
+    return res.status(400).json({ error: 'Price must be greater than 0.' });
+  }
+
+  const date = recorded_on || new Date().toISOString().split('T')[0];
+
+  try {
+    const [result] = await q(
+      `INSERT INTO market_prices(crop_id, market_id, price, unit, recorded_on, recorded_by)
+       VALUES($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (crop_id, market_id, recorded_on)
+       DO UPDATE SET price=$3, unit=$4, recorded_by=$6
+       RETURNING *`,
+      [crop_id, market_id, price, unit, date, req.user.id]
+    );
+    res.status(201).json(result);
+  } catch (error) {
+    console.error('Error recording price:', error);
+    res.status(500).json({ error: 'Failed to record price.' });
+  }
+});
+
+export default r;
