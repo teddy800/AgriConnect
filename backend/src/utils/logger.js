@@ -94,7 +94,7 @@ if (process.env.NODE_ENV !== 'production') {
 /**
  * Express middleware for HTTP request logging
  */
-export function httpLogger(req, res, next) {
+function httpLogger(req, res, next) {
   const start = Date.now();
   
   // Log request
@@ -254,6 +254,5 @@ export {
   logAudit,
   logUpload,
   logRateLimit,
-  createChildLogger,
-  stream
+  createChildLogger
 };
