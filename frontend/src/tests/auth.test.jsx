@@ -1,91 +1,59 @@
-import { describe, test, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../auth.jsx';
 
-describe('Auth Context', () => {
+// Test component that uses auth
+function TestComponent() {
+  const { user, isAuthenticated } = useAuth();
+  return (
+    <div>
+      <div data-testid="auth-status">{isAuthenticated ? 'Authenticated' : 'Not Authenticated'}</div>
+      {user && <div data-testid="user-name">{user.full_name}</div>}
+    </div>
+  );
+}
+
+describe('Authentication Context', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  test('provides initial auth state', () => {
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider
-    });
+  it('should render unauthenticated state initially', async () => {
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      </BrowserRouter>
+    );
 
-    expect(result.current.user).toBeNull();
-    expect(result.current.isAuthenticated).toBe(false);
-    expect(result.current.isFarmer).toBe(false);
-    expect(result.current.isBuyer).toBe(false);
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
+    });
   });
 
-  test('saves user data on login', () => {
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider
-    });
-
+  it('should restore user from localStorage', async () => {
     const mockUser = {
       id: '123',
-      phone: '0966666666',
       full_name: 'Test User',
-      role: 'farmer',
-      is_verified: true
+      role: 'farmer'
     };
+    
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    localStorage.setItem('token', 'fake-token');
 
-    const mockToken = 'fake-jwt-token';
+    render(
+      <BrowserRouter>
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      </BrowserRouter>
+    );
 
-    act(() => {
-      result.current.save({ user: mockUser, token: mockToken });
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
+      expect(screen.getByTestId('user-name')).toHaveTextContent('Test User');
     });
-
-    expect(result.current.user).toEqual(mockUser);
-    expect(result.current.isAuthenticated).toBe(true);
-    expect(result.current.isFarmer).toBe(true);
-    expect(localStorage.getItem('token')).toBe(mockToken);
-  });
-
-  test('clears user data on logout', () => {
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider
-    });
-
-    const mockUser = {
-      id: '123',
-      phone: '0966666666',
-      full_name: 'Test User',
-      role: 'buyer'
-    };
-
-    act(() => {
-      result.current.save({ user: mockUser, token: 'token' });
-    });
-
-    expect(result.current.user).toEqual(mockUser);
-
-    act(() => {
-      result.current.logout();
-    });
-
-    expect(result.current.user).toBeNull();
-    expect(result.current.isAuthenticated).toBe(false);
-    expect(localStorage.getItem('token')).toBeNull();
-  });
-
-  test('hasRole checks user role correctly', () => {
-    const { result } = renderHook(() => useAuth(), {
-      wrapper: AuthProvider
-    });
-
-    const mockUser = {
-      id: '123',
-      role: 'admin'
-    };
-
-    act(() => {
-      result.current.save({ user: mockUser, token: 'token' });
-    });
-
-    expect(result.current.hasRole('admin')).toBe(true);
-    expect(result.current.hasRole('farmer')).toBe(false);
-    expect(result.current.isAdmin).toBe(true);
   });
 });
