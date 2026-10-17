@@ -17,6 +17,7 @@ import uploads from './routes/uploads.js';
 import notifications from './routes/notifications.js';
 import admin from './routes/admin.js';
 import dashboard from './routes/dashboard.js';
+import monitoring from './routes/monitoring.js';
 
 const app = express();
 
@@ -101,6 +102,7 @@ app.use('/api/uploads', uploads);
 app.use('/api/notifications', notifications);
 app.use('/api/admin', admin);
 app.use('/api/dashboard', dashboard);
+app.use('/api/monitoring', monitoring);
 
 // ============================================
 // 404 Handler
