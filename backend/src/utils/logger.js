@@ -127,7 +127,7 @@ function httpLogger(req, res, next) {
 /**
  * Log authentication events
  */
-export function logAuth(action, user, success = true, details = {}) {
+function logAuth(action, user, success = true, details = {}) {
   const level = success ? 'info' : 'warn';
   logger[level](`Auth: ${action}`, {
     action,
@@ -142,7 +142,7 @@ export function logAuth(action, user, success = true, details = {}) {
 /**
  * Log database operations
  */
-export function logDB(operation, table, success = true, details = {}) {
+function logDB(operation, table, success = true, details = {}) {
   logger.info(`Database: ${operation}`, {
     operation,
     table,
@@ -154,7 +154,7 @@ export function logDB(operation, table, success = true, details = {}) {
 /**
  * Log security events
  */
-export function logSecurity(event, level = 'warn', details = {}) {
+function logSecurity(event, level = 'warn', details = {}) {
   logger[level](`Security: ${event}`, {
     event,
     timestamp: new Date().toISOString(),
@@ -165,7 +165,7 @@ export function logSecurity(event, level = 'warn', details = {}) {
 /**
  * Log API errors with full context
  */
-export function logError(error, context = {}) {
+function logError(error, context = {}) {
   logger.error('Application Error', {
     message: error.message,
     stack: error.stack,
@@ -177,7 +177,7 @@ export function logError(error, context = {}) {
 /**
  * Log performance metrics
  */
-export function logPerformance(operation, duration, details = {}) {
+function logPerformance(operation, duration, details = {}) {
   const level = duration > 1000 ? 'warn' : 'info';
   logger[level](`Performance: ${operation}`, {
     operation,
@@ -190,7 +190,7 @@ export function logPerformance(operation, duration, details = {}) {
 /**
  * Log user actions for audit trail
  */
-export function logAudit(userId, action, resource, details = {}) {
+function logAudit(userId, action, resource, details = {}) {
   logger.info('Audit Log', {
     userId,
     action,
@@ -203,7 +203,7 @@ export function logAudit(userId, action, resource, details = {}) {
 /**
  * Log file upload events
  */
-export function logUpload(userId, filename, size, success = true) {
+function logUpload(userId, filename, size, success = true) {
   logger.info('File Upload', {
     userId,
     filename,
@@ -215,7 +215,7 @@ export function logUpload(userId, filename, size, success = true) {
 /**
  * Log rate limit violations
  */
-export function logRateLimit(ip, endpoint, details = {}) {
+function logRateLimit(ip, endpoint, details = {}) {
   logger.warn('Rate Limit Exceeded', {
     ip,
     endpoint,
@@ -227,14 +227,14 @@ export function logRateLimit(ip, endpoint, details = {}) {
 /**
  * Create a child logger with additional context
  */
-export function createChildLogger(context = {}) {
+function createChildLogger(context = {}) {
   return logger.child(context);
 }
 
 /**
  * Stream for Morgan HTTP logger integration
  */
-export const stream = {
+const stream = {
   write: (message) => {
     logger.http(message.trim());
   }
@@ -254,5 +254,6 @@ export {
   logAudit,
   logUpload,
   logRateLimit,
-  createChildLogger
+  createChildLogger,
+  stream
 };
