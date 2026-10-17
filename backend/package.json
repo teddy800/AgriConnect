@@ -7,10 +7,23 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "npm test -- --watch",
+    "test:coverage": "npm test -- --coverage",
+    "test:integration": "npm test -- tests/integration",
+    "test:unit": "npm test -- tests/unit",
+    "lint": "eslint src/**/*.js --fix",
+    "lint:check": "eslint src/**/*.js",
+    "format": "prettier --write \"src/**/*.js\"",
+    "format:check": "prettier --check \"src/**/*.js\"",
     "db:setup": "psql -U postgres -d agriconnect -f db/schema.sql && psql -U postgres -d agriconnect -f db/seed.sql",
     "db:reset": "psql -U postgres -c \"DROP DATABASE IF EXISTS agriconnect;\" && psql -U postgres -c \"CREATE DATABASE agriconnect;\" && npm run db:setup",
-    "db:seed-prices": "psql -U postgres -d agriconnect -f db/seed2.sql"
+    "db:seed-prices": "psql -U postgres -d agriconnect -f db/seed2.sql",
+    "db:migrate": "node scripts/migrate.js",
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:fix": "npm audit fix",
+    "docker:build": "docker build -t agriconnect-backend .",
+    "docker:run": "docker run -p 4000:4000 agriconnect-backend"
   },
   "keywords": [
     "agriculture",
@@ -29,13 +42,29 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
     "multer": "^2.4.0",
     "pg": "^8.12.0",
+    "rate-limit-redis": "^4.2.0",
+    "redis": "^4.6.12",
     "telegraf": "^4.16.3",
+    "validator": "^13.11.0",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^4.7.1",
+    "xss": "^1.0.14",
     "zod": "^3.23.8"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.1.1",
+    "supertest": "^6.3.4"
+  },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
