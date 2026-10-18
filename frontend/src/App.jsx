@@ -1,13 +1,15 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, lazy, Suspense } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
-import Login from './pages/Login.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import Marketplace from './pages/Marketplace.jsx';
-import ListingDetails from './pages/ListingDetails.jsx';
-import MyListings from './pages/MyListings.jsx';
-import CreateListing from './pages/CreateListing.jsx';
-import Inquiries from './pages/Inquiries.jsx';
-import Prices from './pages/Prices.jsx';
+
+// Lazy load all pages for code splitting
+const Login = lazy(() => import('./pages/Login.jsx'));
+const Dashboard = lazy(() => import('./pages/Dashboard.jsx'));
+const Marketplace = lazy(() => import('./pages/Marketplace.jsx'));
+const ListingDetails = lazy(() => import('./pages/ListingDetails.jsx'));
+const MyListings = lazy(() => import('./pages/MyListings.jsx'));
+const CreateListing = lazy(() => import('./pages/CreateListing.jsx'));
+const Inquiries = lazy(() => import('./pages/Inquiries.jsx'));
+const Prices = lazy(() => import('./pages/Prices.jsx'));
 
 const Soon = ({ title }) => (
   <div className="card">
@@ -16,25 +18,37 @@ const Soon = ({ title }) => (
   </div>
 );
 
+// Loading component for Suspense fallback
+const PageLoader = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+    <div style={{ textAlign: 'center' }}>
+      <div className="spinner" style={{ margin: '0 auto 1rem', width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #2e7d32', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+      <p style={{ color: '#666' }}>Loading...</p>
+    </div>
+  </div>
+);
+
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route element={<Layout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="marketplace" element={<Marketplace />} />
-        <Route path="marketplace/:id" element={<ListingDetails />} />
-        <Route path="my-listings" element={<MyListings />} />
-        <Route path="listings/new" element={<CreateListing />} />
-        <Route path="inquiries" element={<Inquiries />} />
-        <Route path="prices" element={<Prices />} />
-        <Route path="weather" element={<Soon title="Weather Forecast" />} />
-        <Route path="advisory" element={<Soon title="Agricultural Advisory" />} />
-        <Route path="messages" element={<Soon title="Direct Messages" />} />
-        <Route path="profile" element={<Soon title="User Profile" />} />
-        <Route path="settings" element={<Soon title="Account Settings" />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route element={<Layout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="marketplace" element={<Marketplace />} />
+          <Route path="marketplace/:id" element={<ListingDetails />} />
+          <Route path="my-listings" element={<MyListings />} />
+          <Route path="listings/new" element={<CreateListing />} />
+          <Route path="inquiries" element={<Inquiries />} />
+          <Route path="prices" element={<Prices />} />
+          <Route path="weather" element={<Soon title="Weather Forecast" />} />
+          <Route path="advisory" element={<Soon title="Agricultural Advisory" />} />
+          <Route path="messages" element={<Soon title="Direct Messages" />} />
+          <Route path="profile" element={<Soon title="User Profile" />} />
+          <Route path="settings" element={<Soon title="Account Settings" />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }

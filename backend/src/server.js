@@ -4,9 +4,13 @@ import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
 import logger, { httpLogger, stream } from './utils/logger.js';
 import { generalLimiter, authLimiter } from './middleware/rateLimiter.js';
 import { sanitizeAll, validateNoSQLInjection } from './middleware/sanitizer.js';
+import { timeoutMiddleware, adaptiveTimeout } from './middleware/timeout.js';
+import { detectApiVersion, checkDeprecatedVersion, getApiVersionInfo } from './middleware/apiVersion.js';
+import { swaggerDocument } from '../swagger.js';
 
 // Import advanced utilities
 import { initializeRedis, closeRedis } from './utils/cache.js';
@@ -83,6 +87,13 @@ if (process.env.NODE_ENV === 'production') {
 app.use(httpLogger); // Custom Winston logger
 
 // ============================================
+// Request Timeout & API Versioning
+// ============================================
+app.use(adaptiveTimeout); // Smart timeout based on route
+app.use(detectApiVersion); // Detect API version from request
+app.use(checkDeprecatedVersion); // Warn about deprecated versions
+
+// ============================================
 // Rate Limiting
 // ============================================
 app.use('/api', generalLimiter); // Apply to all API routes
@@ -93,6 +104,17 @@ app.use('/api/auth/register', authLimiter);
 // Static Files
 // ============================================
 app.use('/uploads', express.static('uploads'));
+
+// ============================================
+// API Documentation (Swagger)
+// ============================================
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'AgriConnect API Documentation'
+}));
+
+// API version info endpoint
+app.get('/api/version', getApiVersionInfo);
 
 // ============================================
 // Health Check Endpoint
@@ -214,8 +236,11 @@ initializeServices().then(() => {
     console.log(`   🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`   📡 API: http://localhost:${PORT}/api`);
     console.log(`   ❤️  Health: http://localhost:${PORT}/api/health`);
+    console.log(`   📚 Docs: http://localhost:${PORT}/api/docs`);
     console.log(`   🔒 Security: Helmet, Rate Limiting, XSS Protection`);
     console.log(`   📝 Logging: Winston (logs/)`);
+    console.log(`   ⏱️  Timeout: Adaptive (5s-60s based on route)`);
+    console.log(`   🔢 API Version: v1 (with versioning support)`);
     console.log('');
     console.log('   🚀 ADVANCED FEATURES:');
     console.log(`   ${io ? '✅' : '❌'} WebSocket - Real-time updates`);

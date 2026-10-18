@@ -216,3 +216,13 @@ tr:last-child td { border-bottom:0; }
   .details, .form-grid { grid-template-columns:1fr; }
   .photos { grid-template-columns:1fr 1fr; }
 }
+
+/* ---------- animations ---------- */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
