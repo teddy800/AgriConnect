@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate, lazy, Suspense } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 
 // Lazy load all pages for code splitting
