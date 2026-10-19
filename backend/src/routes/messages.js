@@ -81,7 +81,7 @@ router.get('/conversations', auth, async (req, res) => {
 router.get('/conversation/:userId', auth, async (req, res) => {
   try {
     const currentUserId = req.user.id;
-    const otherUserId = parseInt(req.param s.userId);
+    const otherUserId = req.params.userId;
     
     if (currentUserId === otherUserId) {
       return res.status(400).json({ error: 'Cannot message yourself' });

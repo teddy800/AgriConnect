@@ -30,6 +30,8 @@ import dashboard from './routes/dashboard.js';
 import monitoring from './routes/monitoring.js';
 import search from './routes/search.js';
 import weather from './routes/weather.js';
+import advisory from './routes/advisory.js';
+import messages from './routes/messages.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -146,6 +148,8 @@ app.use('/api/dashboard', dashboard);
 app.use('/api/monitoring', monitoring);
 app.use('/api/search', search);
 app.use('/api/weather', weather);
+app.use('/api/advisory', advisory);
+app.use('/api/messages', messages);
 
 // ============================================
 // 404 Handler
