@@ -11,6 +11,7 @@ const MyListings = lazy(() => import('./pages/MyListings.jsx'));
 const CreateListing = lazy(() => import('./pages/CreateListing.jsx'));
 const Inquiries = lazy(() => import('./pages/Inquiries.jsx'));
 const Prices = lazy(() => import('./pages/Prices.jsx'));
+const Weather = lazy(() => import('./pages/Weather.jsx'));
 
 const Soon = ({ title }) => (
   <div className="card">
@@ -42,7 +43,7 @@ export default function App() {
           <Route path="listings/new" element={<CreateListing />} />
           <Route path="inquiries" element={<Inquiries />} />
           <Route path="prices" element={<Prices />} />
-          <Route path="weather" element={<Soon title="Weather Forecast" />} />
+          <Route path="weather" element={<Weather />} />
           <Route path="advisory" element={<Soon title="Agricultural Advisory" />} />
           <Route path="messages" element={<Soon title="Direct Messages" />} />
           <Route path="profile" element={<Soon title="User Profile" />} />

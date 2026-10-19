@@ -29,6 +29,7 @@ import admin from './routes/admin.js';
 import dashboard from './routes/dashboard.js';
 import monitoring from './routes/monitoring.js';
 import search from './routes/search.js';
+import weather from './routes/weather.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -144,6 +145,7 @@ app.use('/api/admin', admin);
 app.use('/api/dashboard', dashboard);
 app.use('/api/monitoring', monitoring);
 app.use('/api/search', search);
+app.use('/api/weather', weather);
 
 // ============================================
 // 404 Handler
