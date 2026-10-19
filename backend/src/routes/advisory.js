@@ -250,8 +250,8 @@ const BEST_PRACTICES = {
  * Seasonal calendar for Ethiopian agriculture
  */
 const SEASONAL_CALENDAR = {
-  'Belg' (February - May): {
-    season: 'Small Rains',
+  'Belg': {
+    season: 'Small Rains (February - May)',
     activities: [
       'Plant short-season crops (maize, sorghum)',
       'Prepare land for Meher season',
@@ -261,8 +261,8 @@ const SEASONAL_CALENDAR = {
     crops_to_plant: ['Maize', 'Sorghum', 'Haricot bean', 'Vegetables'],
     weather_watch: 'Monitor rainfall patterns for planting timing'
   },
-  'Meher' (June - September): {
-    season: 'Main Rains',
+  'Meher': {
+    season: 'Main Rains (June - September)',
     activities: [
       'Main planting season for cereals',
       'Weed control crucial',
@@ -272,8 +272,8 @@ const SEASONAL_CALENDAR = {
     crops_to_plant: ['Teff', 'Wheat', 'Barley', 'Maize', 'Sorghum', 'Pulses'],
     weather_watch: 'Peak rainfall - ensure drainage'
   },
-  'Bega' (October - January): {
-    season: 'Dry Season',
+  'Bega': {
+    season: 'Dry Season (October - January)',
     activities: [
       'Main harvest season',
       'Threshing and storage',
