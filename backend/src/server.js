@@ -300,5 +300,5 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 // ============================================
 // Export App for Testing
 // ============================================
-export default app;
 
+export default app;
