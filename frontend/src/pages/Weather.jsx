@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { Cloud, CloudRain, Sun, Wind, Droplets, Eye, Gauge, AlertTriangle, TrendingUp, Sprout, Calendar } from 'lucide-react';
 import { api } from '../api';
 import { useAuth } from '../auth';
-import { useTranslation } from '../i18n';
+import { useT } from '../i18n';
 
 export default function Weather() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t } = useT();
   const [loading, setLoading] = useState(true);
   const [currentWeather, setCurrentWeather] = useState(null);
   const [forecast, setForecast] = useState(null);
@@ -21,7 +21,7 @@ export default function Weather() {
 
   const fetchLocations = async () => {
     try {
-      const data = await api('/weather/locations');
+      const data = await api.get('/weather/locations');
       setLocations(data);
     } catch (error) {
       console.error('Failed to fetch locations:', error);
@@ -35,8 +35,8 @@ export default function Weather() {
       const query = selectedLocation ? `?location=${selectedLocation}` : '';
       
       const [current, forecast] = await Promise.all([
-        api(`/weather/current${query}`),
-        api(`/weather/forecast${query}`)
+        api.get(`/weather/current${query}`),
+        api.get(`/weather/forecast${query}`)
       ]);
       
       setCurrentWeather(current);
