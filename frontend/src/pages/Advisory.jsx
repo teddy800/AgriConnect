@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Lightbulb, Calendar, MessageCircle, Search, Sprout, Droplets, Bug, Package, TrendingUp, Award, ChevronRight } from 'lucide-react';
+import { BookOpen, Lightbulb, Calendar, MessageCircle, Search, Sprout, Droplets, Bug, Package, TrendingUp, Award, ChevronRight, Sparkles, Sun, Cloud, Zap, Leaf } from 'lucide-react';
 import { api } from '../api';
 import { useAuth } from '../auth';
 
@@ -16,6 +16,7 @@ export default function Advisory() {
   const [answer, setAnswer] = useState(null);
   const [askingQuestion, setAskingQuestion] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchInitialData();
@@ -66,86 +67,95 @@ export default function Advisory() {
 
   const getIconForCategory = (category) => {
     const icons = {
-      'Soil Management': <Sprout className="w-6 h-6" />,
-      'Water Management': <Droplets className="w-6 h-6" />,
-      'Pest Management': <Bug className="w-6 h-6" />,
-      'Post-Harvest': <Package className="w-6 h-6" />
+      'Soil Management': <Sprout style={{ width: '24px', height: '24px' }} />,
+      'Water Management': <Droplets style={{ width: '24px', height: '24px' }} />,
+      'Pest Management': <Bug style={{ width: '24px', height: '24px' }} />,
+      'Post-Harvest': <Package style={{ width: '24px', height: '24px' }} />
     };
-    return icons[category] || <BookOpen className="w-6 h-6" />;
+    return icons[category] || <BookOpen style={{ width: '24px', height: '24px' }} />;
   };
 
   const getImportanceColor = (importance) => {
     const colors = {
-      'Critical': 'bg-red-100 text-red-800 border-red-300',
-      'High': 'bg-orange-100 text-orange-800 border-orange-300',
-      'Medium': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      'Low': 'bg-blue-100 text-blue-800 border-blue-300'
+      'Critical': { bg: '#FEE2E2', color: '#991B1B', border: '#FCA5A5' },
+      'High': { bg: '#FED7AA', color: '#9A3412', border: '#FB923C' },
+      'Medium': { bg: '#FEF3C7', color: '#92400E', border: '#FCD34D' },
+      'Low': { bg: '#DBEAFE', color: '#1E40AF', border: '#93C5FD' }
     };
-    return colors[importance] || 'bg-gray-100 text-gray-800 border-gray-300';
+    return colors[importance] || colors['Low'];
   };
+
+  const filteredCrops = crops.filter(crop => 
+    crop.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="spinner mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading agricultural advisory...</p>
+      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: 'linear-gradient(135deg, #E2F1E7 0%, #C6E4D0 100%)' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="spinner" style={{ width: '48px', height: '48px', border: '4px solid #E2F1E7', borderTop: '4px solid #1B7F3B', borderRadius: '50%', margin: '0 auto 16px' }}></div>
+          <p style={{ color: '#0F4D2A', fontWeight: '700', fontSize: '16px' }}>Loading agricultural advisory...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-6 text-white">
-        <div className="flex items-center gap-3 mb-2">
-          <Lightbulb className="w-10 h-10" />
-          <div>
-            <h1 className="text-3xl font-bold">Agricultural Advisory</h1>
-            <p className="text-green-100 mt-1">Expert farming guidance and best practices for Ethiopian agriculture</p>
+    <div className="page" style={{ maxWidth: '1400px', padding: '32px' }}>
+      {/* Hero Header */}
+      <div style={{ background: 'linear-gradient(135deg, #1B7F3B 0%, #0F4D2A 100%)', borderRadius: '24px', padding: '40px', marginBottom: '32px', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 60px rgba(15, 77, 42, 0.25)' }}>
+        <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.1)' }}></div>
+        <div style={{ position: 'absolute', bottom: '-30px', left: '-30px', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.08)' }}></div>
+        <div style={{ position: 'relative', zIndex: '1' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+            <div style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(10px)', display: 'grid', placeItems: 'center' }}>
+              <Lightbulb style={{ width: '36px', height: '36px', color: 'white' }} />
+            </div>
+            <div>
+              <h1 style={{ fontSize: '36px', fontWeight: '900', color: 'white', lineHeight: '1.2', marginBottom: '8px' }}>Agricultural Advisory</h1>
+              <p style={{ fontSize: '16px', color: 'rgba(255, 255, 255, 0.9)', fontWeight: '500', lineHeight: '1.5' }}>Expert farming guidance and best practices for Ethiopian agriculture</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Personalized Recommendations */}
       {user && recommendations.length > 0 && (
-        <div className="card bg-blue-50 border-2 border-blue-200">
-          <h3 className="text-xl font-bold text-blue-900 mb-3 flex items-center gap-2">
-            <Award className="w-6 h-6" />
+        <div style={{ background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)', borderRadius: '20px', padding: '24px', marginBottom: '32px', border: '2px solid #93C5FD', boxShadow: '0 8px 24px rgba(59, 130, 246, 0.15)' }}>
+          <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#1E3A8A', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Award style={{ width: '24px', height: '24px' }} />
             Your Personalized Recommendations
           </h3>
-          <div className="space-y-3">
+          <div style={{ display: 'grid', gap: '16px' }}>
             {recommendations.slice(0, 3).map((rec, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-4 border border-blue-200">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`px-2 py-1 rounded text-xs font-bold ${
-                        rec.priority === 'high' ? 'bg-red-100 text-red-800' :
-                        rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
+              <div key={idx} style={{ background: 'white', borderRadius: '16px', padding: '20px', border: '1px solid #BFDBFE', boxShadow: '0 2px 8px rgba(59, 130, 246, 0.1)' }}>
+                <div style={{ display: 'flex', alignItems: 'start', gap: '16px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: rec.priority === 'high' ? 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)' : rec.priority === 'medium' ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' : 'linear-gradient(135deg, #10B981 0%, #059669 100%)', display: 'grid', placeItems: 'center', flexShrink: '0', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }}>
+                    <Sparkles style={{ width: '24px', height: '24px', color: 'white' }} />
+                  </div>
+                  <div style={{ flex: '1' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ padding: '4px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: '800', background: rec.priority === 'high' ? '#FEE2E2' : rec.priority === 'medium' ? '#FEF3C7' : '#D1FAE5', color: rec.priority === 'high' ? '#991B1B' : rec.priority === 'medium' ? '#92400E' : '#065F46' }}>
                         {rec.priority.toUpperCase()}
                       </span>
-                      <span className="text-xs text-gray-500">{rec.type}</span>
+                      <span style={{ fontSize: '13px', color: '#60756A', fontWeight: '600' }}>{rec.type}</span>
                     </div>
-                    <h4 className="font-bold text-gray-900 mb-2">{rec.title}</h4>
+                    <h4 style={{ fontSize: '17px', fontWeight: '800', color: '#0F4D2A', marginBottom: '12px' }}>{rec.title}</h4>
                     {rec.tips && (
-                      <ul className="text-sm text-gray-700 space-y-1">
+                      <ul style={{ display: 'grid', gap: '8px', listStyle: 'none', padding: '0', margin: '0' }}>
                         {rec.tips.slice(0, 2).map((tip, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <ChevronRight className="w-4 h-4 mt-0.5 text-green-600 flex-shrink-0" />
+                          <li key={i} style={{ display: 'flex', alignItems: 'start', gap: '10px', fontSize: '14px', color: '#3C5245' }}>
+                            <ChevronRight style={{ width: '18px', height: '18px', color: '#1B7F3B', flexShrink: '0', marginTop: '2px' }} />
                             <span>{tip}</span>
                           </li>
                         ))}
                       </ul>
                     )}
                     {rec.activities && (
-                      <ul className="text-sm text-gray-700 space-y-1">
+                      <ul style={{ display: 'grid', gap: '8px', listStyle: 'none', padding: '0', margin: '0' }}>
                         {rec.activities.slice(0, 2).map((activity, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <ChevronRight className="w-4 h-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                          <li key={i} style={{ display: 'flex', alignItems: 'start', gap: '10px', fontSize: '14px', color: '#3C5245' }}>
+                            <ChevronRight style={{ width: '18px', height: '18px', color: '#3B82F6', flexShrink: '0', marginTop: '2px' }} />
                             <span>{activity}</span>
                           </li>
                         ))}
@@ -160,176 +170,205 @@ export default function Advisory() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('crops')}
-          className={`px-4 py-2 font-medium whitespace-nowrap transition ${
-            activeTab === 'crops'
-              ? 'border-b-2 border-green-600 text-green-600'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <Sprout className="w-5 h-5 inline mr-2" />
-          Crop Guide
-        </button>
-        <button
-          onClick={() => setActiveTab('practices')}
-          className={`px-4 py-2 font-medium whitespace-nowrap transition ${
-            activeTab === 'practices'
-              ? 'border-b-2 border-green-600 text-green-600'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <BookOpen className="w-5 h-5 inline mr-2" />
-          Best Practices
-        </button>
-        <button
-          onClick={() => setActiveTab('calendar')}
-          className={`px-4 py-2 font-medium whitespace-nowrap transition ${
-            activeTab === 'calendar'
-              ? 'border-b-2 border-green-600 text-green-600'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <Calendar className="w-5 h-5 inline mr-2" />
-          Seasonal Calendar
-        </button>
-        <button
-          onClick={() => setActiveTab('ask')}
-          className={`px-4 py-2 font-medium whitespace-nowrap transition ${
-            activeTab === 'ask'
-              ? 'border-b-2 border-green-600 text-green-600'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          <MessageCircle className="w-5 h-5 inline mr-2" />
-          Ask Expert
-        </button>
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '28px', flexWrap: 'wrap', background: 'white', padding: '8px', borderRadius: '16px', border: '2px solid #E2F1E7', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }}>
+        {[
+          { id: 'crops', label: 'Crop Guide', icon: <Sprout style={{ width: '20px', height: '20px' }} /> },
+          { id: 'practices', label: 'Best Practices', icon: <BookOpen style={{ width: '20px', height: '20px' }} /> },
+          { id: 'calendar', label: 'Seasonal Calendar', icon: <Calendar style={{ width: '20px', height: '20px' }} /> },
+          { id: 'ask', label: 'Ask Expert', icon: <MessageCircle style={{ width: '20px', height: '20px' }} /> }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: '12px 24px',
+              borderRadius: '12px',
+              border: 'none',
+              background: activeTab === tab.id ? 'linear-gradient(135deg, #1B7F3B 0%, #0F4D2A 100%)' : 'transparent',
+              color: activeTab === tab.id ? 'white' : '#60756A',
+              fontSize: '15px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.2s',
+              boxShadow: activeTab === tab.id ? '0 4px 12px rgba(15, 77, 42, 0.3)' : 'none'
+            }}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Crop Guide Tab */}
       {activeTab === 'crops' && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <Search className="w-5 h-5 text-gray-400" />
+        <div>
+          <div style={{ marginBottom: '24px', position: 'relative' }}>
+            <Search style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', width: '20px', height: '20px', color: '#60756A' }} />
             <input
               type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search crops..."
-              className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+              style={{ width: '100%', paddingLeft: '54px', height: '52px', border: '2px solid #E2F1E7', borderRadius: '16px', fontSize: '15px', background: 'white', fontWeight: '500' }}
+              onFocus={(e) => e.target.style.borderColor = '#1B7F3B'}
+              onBlur={(e) => e.target.style.borderColor = '#E2F1E7'}
             />
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {crops.map((crop, idx) => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+            {filteredCrops.map((crop, idx) => (
               <div
                 key={idx}
                 onClick={() => setSelectedCrop(crop)}
-                className="card hover:shadow-lg transition cursor-pointer border-2 hover:border-green-500"
+                style={{
+                  background: 'white',
+                  borderRadius: '20px',
+                  padding: '24px',
+                  border: '2px solid #E2F1E7',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 12px 28px rgba(15, 77, 42, 0.15)';
+                  e.currentTarget.style.borderColor = '#1B7F3B';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+                  e.currentTarget.style.borderColor = '#E2F1E7';
+                }}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">{crop.name}</h3>
-                    <p className="text-sm text-gray-600">{crop.category}</p>
-                  </div>
-                  <span className={`px-2 py-1 rounded text-xs font-bold ${
-                    crop.demand === 'Very High' ? 'bg-green-100 text-green-800' :
-                    crop.demand === 'High' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {crop.demand}
-                  </span>
-                </div>
+                <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, #E2F1E7 0%, #C6E4D0 100%)', opacity: '0.5' }}></div>
                 
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-700">{crop.season}</span>
+                <div style={{ position: 'relative', zIndex: '1' }}>
+                  <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', marginBottom: '16px' }}>
+                    <div style={{ flex: '1' }}>
+                      <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0F4D2A', marginBottom: '6px' }}>{crop.name}</h3>
+                      <p style={{ fontSize: '14px', color: '#60756A', fontWeight: '600' }}>{crop.category}</p>
+                    </div>
+                    <span style={{
+                      padding: '6px 14px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '800',
+                      background: crop.demand === 'Very High' ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : crop.demand === 'High' ? 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' : '#E2F1E7',
+                      color: crop.demand === 'Very High' || crop.demand === 'High' ? 'white' : '#1B7F3B',
+                      boxShadow: crop.demand === 'Very High' || crop.demand === 'High' ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none'
+                    }}>
+                      {crop.demand}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-700">Yield: {crop.yield}</span>
-                  </div>
-                  <div className="text-xs text-gray-500">{crop.duration}</div>
-                </div>
-
-                <button className="mt-3 w-full px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition font-medium">
-                  View Details
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Crop Detail Modal */}
-          {selectedCrop && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedCrop(null)}>
-              <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                <div className="p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold text-gray-900">{selectedCrop.name}</h2>
-                    <button
-                      onClick={() => setSelectedCrop(null)}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      ✕
-                    </button>
-                  </div>
-
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <p className="text-sm text-green-800">
-                      Click on specific sections for detailed information about growing {selectedCrop.name}
-                    </p>
+                  
+                  <div style={{ display: 'grid', gap: '10px', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: '#F8FCF9', borderRadius: '12px' }}>
+                      <Calendar style={{ width: '18px', height: '18px', color: '#1B7F3B' }} />
+                      <span style={{ fontSize: '13px', color: '#3C5245', fontWeight: '600' }}>{crop.season}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', background: '#F8FCF9', borderRadius: '12px' }}>
+                      <TrendingUp style={{ width: '18px', height: '18px', color: '#1B7F3B' }} />
+                      <span style={{ fontSize: '13px', color: '#3C5245', fontWeight: '600' }}>Yield: {crop.yield}</span>
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#8FA599', fontWeight: '600', padding: '10px', background: '#F8FCF9', borderRadius: '12px' }}>
+                      Duration: {crop.duration}
+                    </div>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      setQuestion(`How do I grow ${selectedCrop.name}?`);
-                      setActiveTab('ask');
-                      setSelectedCrop(null);
-                    }}
-                    className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
-                  >
-                    Ask AI Assistant about {selectedCrop.name}
+                  <button style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: 'linear-gradient(135deg, #E2F1E7 0%, #C6E4D0 100%)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    color: '#0F4D2A',
+                    fontSize: '14px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #1B7F3B 0%, #0F4D2A 100%)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #E2F1E7 0%, #C6E4D0 100%)';
+                    e.currentTarget.style.color = '#0F4D2A';
+                  }}>
+                    View Details
                   </button>
                 </div>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       )}
 
       {/* Best Practices Tab */}
       {activeTab === 'practices' && (
-        <div className="space-y-6">
+        <div style={{ display: 'grid', gap: '24px' }}>
           {bestPractices.map((category, idx) => (
-            <div key={idx} className="card">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-green-100 rounded-lg text-green-700">
+            <div key={idx} style={{ background: 'white', borderRadius: '20px', padding: '28px', border: '2px solid #E2F1E7', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'linear-gradient(135deg, #E2F1E7 0%, #C6E4D0 100%)', color: '#1B7F3B', display: 'grid', placeItems: 'center' }}>
                   {getIconForCategory(category.category)}
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">{category.category}</h3>
-                  <p className="text-sm text-gray-600">{category.count} practices available</p>
+                  <h3 style={{ fontSize: '22px', fontWeight: '900', color: '#0F4D2A', marginBottom: '4px' }}>{category.category}</h3>
+                  <p style={{ fontSize: '14px', color: '#60756A', fontWeight: '600' }}>{category.count} practices available</p>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                {category.practices.map((practice, pidx) => (
-                  <div
-                    key={pidx}
-                    onClick={() => setSelectedPractice(practice)}
-                    className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer border-2 hover:border-green-500"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-bold text-gray-900 mb-1">{practice.title}</h4>
-                        <p className="text-sm text-gray-700">{practice.description}</p>
+              <div style={{ display: 'grid', gap: '16px' }}>
+                {category.practices.map((practice, pidx) => {
+                  const colors = getImportanceColor(practice.importance);
+                  return (
+                    <div
+                      key={pidx}
+                      onClick={() => setSelectedPractice(practice)}
+                      style={{
+                        padding: '20px',
+                        background: 'linear-gradient(135deg, #F8FCF9 0%, white 100%)',
+                        borderRadius: '16px',
+                        border: `2px solid ${colors.border}`,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateX(4px)';
+                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateX(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: '16px' }}>
+                        <div style={{ flex: '1' }}>
+                          <h4 style={{ fontSize: '17px', fontWeight: '800', color: '#0F4D2A', marginBottom: '8px' }}>{practice.title}</h4>
+                          <p style={{ fontSize: '14px', color: '#3C5245', lineHeight: '1.6' }}>{practice.description}</p>
+                        </div>
+                        <span style={{
+                          padding: '8px 16px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '800',
+                          background: colors.bg,
+                          color: colors.color,
+                          border: `2px solid ${colors.border}`,
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {practice.importance}
+                        </span>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${getImportanceColor(practice.importance)}`}>
-                        {practice.importance}
-                      </span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -338,138 +377,202 @@ export default function Advisory() {
 
       {/* Seasonal Calendar Tab */}
       {activeTab === 'calendar' && seasonalCalendar && (
-        <div className="space-y-6">
-          <div className="card bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200">
-            <div className="flex items-center gap-3 mb-3">
-              <Calendar className="w-8 h-8 text-amber-700" />
+        <div>
+          <div style={{ background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)', borderRadius: '20px', padding: '24px', marginBottom: '28px', border: '2px solid #FCD34D', boxShadow: '0 8px 24px rgba(245, 158, 11, 0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.9)', display: 'grid', placeItems: 'center' }}>
+                <Sun style={{ width: '32px', height: '32px', color: '#D97706' }} />
+              </div>
               <div>
-                <h3 className="text-2xl font-bold text-amber-900">Current Season: {seasonalCalendar.current_season}</h3>
-                <p className="text-amber-700">{seasonalCalendar.message}</p>
+                <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#78350F', marginBottom: '4px' }}>
+                  Current Season: {seasonalCalendar.current_season}
+                </h3>
+                <p style={{ fontSize: '15px', color: '#92400E', fontWeight: '600' }}>{seasonalCalendar.message}</p>
               </div>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {Object.entries(seasonalCalendar.calendar).map(([season, data]) => (
-              <div
-                key={season}
-                className={`card ${
-                  season === seasonalCalendar.current_season
-                    ? 'border-4 border-green-500 bg-green-50'
-                    : 'border-2 border-gray-200'
-                }`}
-              >
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{season}</h3>
-                <p className="text-sm text-gray-600 mb-4">{data.season}</p>
-
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-bold text-gray-700 mb-2">Activities:</h4>
-                    <ul className="space-y-1">
-                      {data.activities.map((activity, idx) => (
-                        <li key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                          <ChevronRight className="w-4 h-4 mt-0.5 text-green-600 flex-shrink-0" />
-                          <span>{activity}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {data.crops_to_plant && (
-                    <div>
-                      <h4 className="font-bold text-gray-700 mb-2">Crops to Plant:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {data.crops_to_plant.map((crop, idx) => (
-                          <span key={idx} className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
-                            {crop}
-                          </span>
-                        ))}
-                      </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
+            {Object.entries(seasonalCalendar.calendar).map(([season, data]) => {
+              const isCurrent = season === seasonalCalendar.current_season;
+              return (
+                <div
+                  key={season}
+                  style={{
+                    background: isCurrent ? 'linear-gradient(135deg, #E2F1E7 0%, #C6E4D0 100%)' : 'white',
+                    borderRadius: '20px',
+                    padding: '28px',
+                    border: isCurrent ? '3px solid #1B7F3B' : '2px solid #E2F1E7',
+                    boxShadow: isCurrent ? '0 12px 32px rgba(15, 77, 42, 0.2)' : '0 4px 12px rgba(0, 0, 0, 0.05)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {isCurrent && (
+                    <div style={{ position: 'absolute', top: '20px', right: '20px', padding: '6px 14px', background: 'linear-gradient(135deg, #1B7F3B 0%, #0F4D2A 100%)', borderRadius: '12px', fontSize: '11px', fontWeight: '800', color: 'white', boxShadow: '0 4px 12px rgba(15, 77, 42, 0.3)' }}>
+                      ACTIVE
                     </div>
                   )}
+                  
+                  <h3 style={{ fontSize: '24px', fontWeight: '900', color: isCurrent ? '#0F4D2A' : '#14261B', marginBottom: '8px' }}>{season}</h3>
+                  <p style={{ fontSize: '14px', color: isCurrent ? '#1B7F3B' : '#60756A', fontWeight: '700', marginBottom: '20px' }}>{data.season}</p>
 
-                  {data.crops_to_harvest && (
+                  <div style={{ display: 'grid', gap: '20px' }}>
                     <div>
-                      <h4 className="font-bold text-gray-700 mb-2">Crops to Harvest:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {data.crops_to_harvest.map((crop, idx) => (
-                          <span key={idx} className="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs font-medium">
-                            {crop}
-                          </span>
+                      <h4 style={{ fontSize: '15px', fontWeight: '800', color: '#0F4D2A', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Zap style={{ width: '18px', height: '18px', color: '#1B7F3B' }} />
+                        Activities:
+                      </h4>
+                      <ul style={{ display: 'grid', gap: '10px', listStyle: 'none', padding: '0', margin: '0' }}>
+                        {data.activities.map((activity, idx) => (
+                          <li key={idx} style={{ display: 'flex', alignItems: 'start', gap: '10px', fontSize: '14px', color: '#3C5245', padding: '10px', background: 'white', borderRadius: '12px' }}>
+                            <ChevronRight style={{ width: '18px', height: '18px', color: '#1B7F3B', flexShrink: '0', marginTop: '2px' }} />
+                            <span>{activity}</span>
+                          </li>
                         ))}
+                      </ul>
+                    </div>
+
+                    {data.crops_to_plant && (
+                      <div>
+                        <h4 style={{ fontSize: '15px', fontWeight: '800', color: '#0F4D2A', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Leaf style={{ width: '18px', height: '18px', color: '#1B7F3B' }} />
+                          Crops to Plant:
+                        </h4>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                          {data.crops_to_plant.map((crop, idx) => (
+                            <span key={idx} style={{ padding: '6px 14px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: 'white', borderRadius: '10px', fontSize: '13px', fontWeight: '700', boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)' }}>
+                              {crop}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {data.crops_to_harvest && (
+                      <div>
+                        <h4 style={{ fontSize: '15px', fontWeight: '800', color: '#0F4D2A', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Package style={{ width: '18px', height: '18px', color: '#F59E0B' }} />
+                          Crops to Harvest:
+                        </h4>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                          {data.crops_to_harvest.map((crop, idx) => (
+                            <span key={idx} style={{ padding: '6px 14px', background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', color: 'white', borderRadius: '10px', fontSize: '13px', fontWeight: '700', boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)' }}>
+                              {crop}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ padding: '16px', background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)', borderRadius: '14px', border: '1px solid #93C5FD' }}>
+                      <div style={{ display: 'flex', alignItems: 'start', gap: '10px' }}>
+                        <Cloud style={{ width: '20px', height: '20px', color: '#1E40AF', flexShrink: '0', marginTop: '2px' }} />
+                        <div>
+                          <strong style={{ display: 'block', fontSize: '13px', color: '#1E40AF', fontWeight: '800', marginBottom: '4px' }}>Weather Watch:</strong>
+                          <span style={{ fontSize: '13px', color: '#1E3A8A', fontWeight: '600' }}>{data.weather_watch}</span>
+                        </div>
                       </div>
                     </div>
-                  )}
-
-                  <div className="p-3 bg-blue-50 rounded text-sm text-blue-800">
-                    <strong>Weather:</strong> {data.weather_watch}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* Ask Expert Tab */}
       {activeTab === 'ask' && (
-        <div className="space-y-6">
-          <div className="card bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200">
-            <h3 className="text-xl font-bold text-purple-900 mb-2">AI Agricultural Assistant</h3>
-            <p className="text-purple-700">Ask any farming question and get expert guidance powered by our knowledge base.</p>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ background: 'linear-gradient(135deg, #F3E8FF 0%, #E9D5FF 100%)', borderRadius: '20px', padding: '28px', marginBottom: '28px', border: '2px solid #C084FC', boxShadow: '0 8px 24px rgba(168, 85, 247, 0.15)' }}>
+            <h3 style={{ fontSize: '24px', fontWeight: '900', color: '#581C87', marginBottom: '8px' }}>AI Agricultural Assistant</h3>
+            <p style={{ fontSize: '15px', color: '#7C3AED', fontWeight: '600' }}>Ask any farming question and get expert guidance powered by our knowledge base</p>
           </div>
 
           {!user && (
-            <div className="card bg-yellow-50 border-2 border-yellow-200">
-              <p className="text-yellow-800">Please login to ask questions and get personalized advice.</p>
+            <div style={{ background: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)', borderRadius: '18px', padding: '20px', marginBottom: '24px', border: '2px solid #FCD34D' }}>
+              <p style={{ fontSize: '15px', color: '#78350F', fontWeight: '700' }}>Please login to ask questions and get personalized advice.</p>
             </div>
           )}
 
-          <div className="card">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div style={{ background: 'white', borderRadius: '20px', padding: '28px', border: '2px solid #E2F1E7', marginBottom: '24px', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06)' }}>
+            <label style={{ display: 'block', fontSize: '15px', fontWeight: '800', color: '#0F4D2A', marginBottom: '12px' }}>
               Your Question:
             </label>
             <textarea
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="e.g., When should I plant teff? How do I control pests on my maize crop?"
-              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 min-h-[100px]"
+              style={{ width: '100%', padding: '16px', border: '2px solid #E2F1E7', borderRadius: '16px', fontSize: '15px', minHeight: '140px', fontFamily: 'inherit', resize: 'vertical', background: '#F8FCF9' }}
               disabled={!user || askingQuestion}
+              onFocus={(e) => e.target.style.borderColor = '#1B7F3B'}
+              onBlur={(e) => e.target.style.borderColor = '#E2F1E7'}
             />
 
             <button
               onClick={handleAskQuestion}
               disabled={!user || !question.trim() || askingQuestion}
-              className="mt-4 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium disabled:bg-gray-300 disabled:cursor-not-allowed"
+              style={{
+                marginTop: '16px',
+                padding: '14px 28px',
+                background: user && question.trim() && !askingQuestion ? 'linear-gradient(135deg, #1B7F3B 0%, #0F4D2A 100%)' : '#E2F1E7',
+                border: 'none',
+                borderRadius: '14px',
+                color: user && question.trim() && !askingQuestion ? 'white' : '#8FA599',
+                fontSize: '16px',
+                fontWeight: '800',
+                cursor: user && question.trim() && !askingQuestion ? 'pointer' : 'not-allowed',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                boxShadow: user && question.trim() && !askingQuestion ? '0 6px 16px rgba(15, 77, 42, 0.3)' : 'none'
+              }}
             >
-              {askingQuestion ? 'Getting Answer...' : 'Ask Question'}
+              {askingQuestion ? (
+                <>
+                  <div className="spinner" style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid white', borderRadius: '50%' }}></div>
+                  Getting Answer...
+                </>
+              ) : (
+                <>
+                  <MessageCircle style={{ width: '20px', height: '20px' }} />
+                  Ask Question
+                </>
+              )}
             </button>
           </div>
 
           {answer && (
-            <div className="card bg-green-50 border-2 border-green-200">
-              <div className="flex items-start gap-3">
-                <Lightbulb className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
-                <div className="flex-1">
-                  <h4 className="font-bold text-green-900 mb-2">Answer:</h4>
-                  <p className="text-gray-800 whitespace-pre-line mb-4">{answer.answer}</p>
+            <div style={{ background: 'linear-gradient(135deg, #E2F1E7 0%, #C6E4D0 100%)', borderRadius: '20px', padding: '28px', border: '2px solid #1B7F3B', boxShadow: '0 12px 32px rgba(15, 77, 42, 0.15)' }}>
+              <div style={{ display: 'flex', alignItems: 'start', gap: '16px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg, #1B7F3B 0%, #0F4D2A 100%)', display: 'grid', placeItems: 'center', flexShrink: '0', boxShadow: '0 4px 12px rgba(15, 77, 42, 0.3)' }}>
+                  <Lightbulb style={{ width: '24px', height: '24px', color: 'white' }} />
+                </div>
+                <div style={{ flex: '1' }}>
+                  <h4 style={{ fontSize: '18px', fontWeight: '900', color: '#0F4D2A', marginBottom: '12px' }}>Answer:</h4>
+                  <p style={{ fontSize: '15px', color: '#14261B', lineHeight: '1.7', marginBottom: '16px', whiteSpace: 'pre-line' }}>{answer.answer}</p>
 
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      answer.confidence === 'high' ? 'bg-green-100 text-green-800' :
-                      answer.confidence === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                    <span style={{
+                      padding: '6px 14px',
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      fontWeight: '800',
+                      background: answer.confidence === 'high' ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : answer.confidence === 'medium' ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)' : '#E2F1E7',
+                      color: answer.confidence === 'high' || answer.confidence === 'medium' ? 'white' : '#1B7F3B',
+                      boxShadow: answer.confidence === 'high' || answer.confidence === 'medium' ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none'
+                    }}>
                       Confidence: {answer.confidence}
                     </span>
                   </div>
 
                   {answer.related_topics && answer.related_topics.length > 0 && (
-                    <div className="mb-3">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Related Topics:</p>
-                      <div className="flex flex-wrap gap-2">
+                    <div style={{ marginBottom: '16px' }}>
+                      <p style={{ fontSize: '14px', fontWeight: '800', color: '#0F4D2A', marginBottom: '10px' }}>Related Topics:</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {answer.related_topics.map((topic, idx) => (
-                          <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                          <span key={idx} style={{ padding: '6px 12px', background: 'white', border: '2px solid #1B7F3B', borderRadius: '10px', fontSize: '13px', color: '#1B7F3B', fontWeight: '700' }}>
                             {topic}
                           </span>
                         ))}
@@ -479,11 +582,11 @@ export default function Advisory() {
 
                   {answer.resources && answer.resources.length > 0 && (
                     <div>
-                      <p className="text-sm font-medium text-gray-700 mb-2">Additional Resources:</p>
-                      <ul className="text-sm text-gray-700 space-y-1">
+                      <p style={{ fontSize: '14px', fontWeight: '800', color: '#0F4D2A', marginBottom: '10px' }}>Additional Resources:</p>
+                      <ul style={{ display: 'grid', gap: '8px', listStyle: 'none', padding: '0', margin: '0' }}>
                         {answer.resources.map((resource, idx) => (
-                          <li key={idx} className="flex items-center gap-2">
-                            <ChevronRight className="w-4 h-4 text-green-600" />
+                          <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#14261B', fontWeight: '600', padding: '10px', background: 'white', borderRadius: '10px' }}>
+                            <ChevronRight style={{ width: '16px', height: '16px', color: '#1B7F3B' }} />
                             {resource}
                           </li>
                         ))}
@@ -496,9 +599,9 @@ export default function Advisory() {
           )}
 
           {/* Quick Questions */}
-          <div className="card">
-            <h4 className="font-bold text-gray-900 mb-3">Quick Questions:</h4>
-            <div className="grid md:grid-cols-2 gap-3">
+          <div style={{ background: 'white', borderRadius: '20px', padding: '28px', border: '2px solid #E2F1E7', marginTop: '24px', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06)' }}>
+            <h4 style={{ fontSize: '18px', fontWeight: '900', color: '#0F4D2A', marginBottom: '16px' }}>Quick Questions:</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
               {[
                 'When should I plant teff?',
                 'How do I control fall armyworm?',
@@ -513,8 +616,30 @@ export default function Advisory() {
                     setQuestion(q);
                     if (user) handleAskQuestion();
                   }}
-                  className="px-4 py-3 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 hover:border-green-500 rounded-lg text-left text-sm transition"
                   disabled={!user}
+                  style={{
+                    padding: '16px',
+                    background: 'linear-gradient(135deg, #F8FCF9 0%, white 100%)',
+                    border: '2px solid #E2F1E7',
+                    borderRadius: '14px',
+                    textAlign: 'left',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: '#3C5245',
+                    cursor: user ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.2s',
+                    opacity: user ? '1' : '0.6'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (user) {
+                      e.currentTarget.style.borderColor = '#1B7F3B';
+                      e.currentTarget.style.background = 'linear-gradient(135deg, #E2F1E7 0%, #F1F8F3 100%)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#E2F1E7';
+                    e.currentTarget.style.background = 'linear-gradient(135deg, #F8FCF9 0%, white 100%)';
+                  }}
                 >
                   {q}
                 </button>
