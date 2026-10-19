@@ -15,6 +15,8 @@ const Weather = lazy(() => import('./pages/Weather.jsx'));
 const Advisory = lazy(() => import('./pages/Advisory.jsx'));
 const Messages = lazy(() => import('./pages/Messages.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
+const Settings = lazy(() => import('./pages/Settings.jsx'));
+const Notifications = lazy(() => import('./pages/Notifications.jsx'));
 
 const Soon = ({ title }) => (
   <div className="card">
@@ -50,7 +52,8 @@ export default function App() {
           <Route path="advisory" element={<Advisory />} />
           <Route path="messages" element={<Messages />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="settings" element={<Soon title="Account Settings" />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -25,6 +25,7 @@ const NAV = [
 function NotificationBell() {
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const load = () => api.get('/notifications').then(setItems).catch(() => {});
 
   useEffect(() => {
@@ -34,27 +35,41 @@ function NotificationBell() {
   }, []);
 
   const unread = items.filter(n => !n.is_read).length;
-  const toggle = async () => {
-    setOpen(!open);
-    if (!open && unread) {
-      await api.patch('/notifications/read-all');
-      setTimeout(load, 1500);
-    }
+  
+  const handleClick = () => {
+    navigate('/notifications');
   };
 
   return (
-    <>
-      <button className="iconbtn" onClick={toggle} aria-label="Notifications">
-        <Bell size={18} />
-        {unread > 0 && <span className="dot">{unread}</span>}
-      </button>
-      {open && (
-        <div className="pop">
-          {items.length === 0 && <p className="muted">No alerts yet.</p>}
-          {items.slice(0, 8).map(n => <p key={n.id}>{n.message}</p>)}
-        </div>
+    <button 
+      className="iconbtn" 
+      onClick={handleClick} 
+      aria-label="Notifications"
+      style={{ position: 'relative' }}
+    >
+      <Bell size={18} />
+      {unread > 0 && (
+        <span style={{
+          position: 'absolute',
+          top: '-4px',
+          right: '-4px',
+          background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+          color: 'white',
+          fontSize: '10px',
+          fontWeight: '900',
+          padding: '2px 6px',
+          borderRadius: '10px',
+          minWidth: '18px',
+          height: '18px',
+          display: 'grid',
+          placeItems: 'center',
+          boxShadow: '0 2px 6px rgba(239, 68, 68, 0.4)',
+          border: '2px solid white'
+        }}>
+          {unread > 9 ? '9+' : unread}
+        </span>
       )}
-    </>
+    </button>
   );
 }
 
