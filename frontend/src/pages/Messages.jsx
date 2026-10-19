@@ -23,9 +23,9 @@ export default function Messages() {
   }, [user]);
 
   useEffect(() => {
-    if (socket && user) {
-      // Listen for new messages
-      socket.on('new_message', (data) => {
+    if (socket && socket.isConnected && user) {
+      // Listen for new messages using the hook's on method
+      const unsubscribe = socket.on('new_message', (data) => {
         if (activeConversation && data.conversation_id === activeConversation.conversation_id) {
           setMessages(prev => [...prev, { ...data.message, sent_by_me: false }]);
           scrollToBottom();
@@ -38,11 +38,9 @@ export default function Messages() {
         fetchConversations();
       });
 
-      return () => {
-        socket.off('new_message');
-      };
+      return unsubscribe; // The hook's on method returns a cleanup function
     }
-  }, [socket, user, activeConversation]);
+  }, [socket?.isConnected, user, activeConversation]);
 
   useEffect(() => {
     scrollToBottom();
@@ -236,7 +234,7 @@ export default function Messages() {
                         {activeConversation.other_user.role}
                       </span>
                       <Phone className="w-4 h-4" />
-                      <span>{activeConversation.other_user.phone_number}</span>
+                      <span>{activeConversation.other_user.phone}</span>
                     </div>
                   </div>
                 </div>

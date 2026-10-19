@@ -32,8 +32,8 @@ router.get('/conversations', auth, async (req, res) => {
           ELSE u1.full_name
         END as other_user_name,
         CASE 
-          WHEN c.user1_id = $1 THEN u2.phone_number
-          ELSE u1.phone_number
+          WHEN c.user1_id = $1 THEN u2.phone
+          ELSE u1.phone
         END as other_user_phone,
         CASE 
           WHEN c.user1_id = $1 THEN u2.role
@@ -113,7 +113,7 @@ router.get('/conversation/:userId', auth, async (req, res) => {
     
     // Get other user info
     const [otherUser] = await q(
-      'SELECT id, full_name, phone_number, role FROM users WHERE id = $1',
+      'SELECT id, full_name, phone, role FROM users WHERE id = $1',
       [otherUserId]
     );
     
