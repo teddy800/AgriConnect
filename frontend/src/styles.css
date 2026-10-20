@@ -138,7 +138,32 @@ tr:last-child td { border-bottom:0; }
 .auth-art li { margin:10px 0; opacity:.92; }
 .auth-form { display:grid; place-items:center; padding:32px; background:#fff; }
 .form { width:100%; max-width:380px; display:grid; gap:12px; }
-.form h2 { font-size:24px; font-weight:800; }
+.form h2 { font-size:24px; font-weight:800; margin-bottom: 4px; }
+.form .field { margin-bottom: 6px; }
+.form .field label { 
+  display: block; 
+  font-size: 13px; 
+  font-weight: 700; 
+  color: var(--ink); 
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.form input, .form select { margin-bottom: 0; }
+.form input:focus, .form select:focus, .form textarea:focus { 
+  border-color: var(--g700);
+  box-shadow: 0 0 0 3px rgba(27, 127, 59, 0.1);
+  outline: none;
+}
+.form .err { 
+  background: #FEF2F2; 
+  border: 1px solid #FCA5A5; 
+  color: var(--bad); 
+  padding: 10px 12px; 
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 4px 0;
+}
 
 /* ---------- responsive ---------- */
 @media (max-width:1050px) {

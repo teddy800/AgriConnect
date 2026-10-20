@@ -54,77 +54,114 @@ export default function Login() {
       <section className="auth-form">
         <form className="form" onSubmit={submit}>
           <h2>{mode === 'login' ? 'Welcome back' : 'Create your account'}</h2>
+          <p className="muted" style={{ fontSize: '14px', marginBottom: '20px' }}>
+            {mode === 'login' ? 'Sign in to continue to AgriConnect' : 'Join thousands of farmers and buyers'}
+          </p>
           
           {mode === 'login' && (
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
-              <button
-                type="button"
-                className={`btn ${loginMethod === 'phone' ? 'primary' : ''}`}
-                style={{ flex: 1, padding: '10px 14px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                onClick={() => setLoginMethod('phone')}
-              >
-                <Phone size={16} />
-                Phone
-              </button>
-              <button
-                type="button"
-                className={`btn ${loginMethod === 'email' ? 'primary' : ''}`}
-                style={{ flex: 1, padding: '10px 14px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                onClick={() => setLoginMethod('email')}
-              >
-                <Mail size={16} />
-                Email
-              </button>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--ink)', marginBottom: '10px' }}>
+                Choose Login Method
+              </label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  className={`btn ${loginMethod === 'phone' ? 'primary' : ''}`}
+                  style={{ flex: 1, padding: '10px 14px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  onClick={() => setLoginMethod('phone')}
+                >
+                  <Phone size={16} />
+                  Phone
+                </button>
+                <button
+                  type="button"
+                  className={`btn ${loginMethod === 'email' ? 'primary' : ''}`}
+                  style={{ flex: 1, padding: '10px 14px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  onClick={() => setLoginMethod('email')}
+                >
+                  <Mail size={16} />
+                  Email
+                </button>
+              </div>
             </div>
           )}
 
-          {mode === 'register' && <input placeholder="Full name" onChange={set('full_name')} required />}
+          {mode === 'register' && (
+            <div className="field">
+              <label>Full Name</label>
+              <input placeholder="Enter your full name" onChange={set('full_name')} required />
+            </div>
+          )}
           
           {mode === 'login' ? (
             loginMethod === 'phone' ? (
-              <input 
-                placeholder="Phone (09...)" 
-                onChange={set('phone')} 
-                type="tel"
-                required 
-              />
+              <div className="field">
+                <label>Phone Number</label>
+                <input 
+                  placeholder="09XXXXXXXX" 
+                  onChange={set('phone')} 
+                  type="tel"
+                  required 
+                />
+              </div>
             ) : (
-              <input 
-                placeholder="Email address" 
-                onChange={set('email')} 
-                type="email"
-                required 
-              />
+              <div className="field">
+                <label>Email Address</label>
+                <input 
+                  placeholder="your.email@example.com" 
+                  onChange={set('email')} 
+                  type="email"
+                  required 
+                />
+              </div>
             )
           ) : (
             <>
-              <input placeholder="Phone (09...)" onChange={set('phone')} type="tel" required />
-              <input placeholder="Email (optional)" onChange={set('email')} type="email" />
+              <div className="field">
+                <label>Phone Number</label>
+                <input placeholder="09XXXXXXXX" onChange={set('phone')} type="tel" required />
+              </div>
+              <div className="field">
+                <label>Email Address <span style={{ color: 'var(--muted)', fontWeight: '400' }}>(Optional)</span></label>
+                <input placeholder="your.email@example.com" onChange={set('email')} type="email" />
+              </div>
             </>
           )}
 
-          <input type="password" placeholder="Password" onChange={set('password')} required />
+          <div className="field">
+            <label>Password</label>
+            <input type="password" placeholder="Enter your password" onChange={set('password')} required />
+          </div>
           
           {mode === 'register' && (
             <>
-              <select onChange={set('role')}>
-                <option value="farmer">I am a farmer</option>
-                <option value="buyer">I am a buyer</option>
-              </select>
-              <select onChange={set('region_id')}>
-                <option value="">Region</option>
-                {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-              </select>
-              <select onChange={set('preferred_lang')}>
-                <option value="en">English</option>
-                <option value="am">አማርኛ</option>
-                <option value="om">Afaan Oromoo</option>
-              </select>
+              <div className="field">
+                <label>I am a</label>
+                <select onChange={set('role')}>
+                  <option value="farmer">Farmer</option>
+                  <option value="buyer">Buyer</option>
+                </select>
+              </div>
+              <div className="field">
+                <label>Region <span style={{ color: 'var(--muted)', fontWeight: '400' }}>(Optional)</span></label>
+                <select onChange={set('region_id')}>
+                  <option value="">Select your region</option>
+                  {regions.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                </select>
+              </div>
+              <div className="field">
+                <label>Preferred Language</label>
+                <select onChange={set('preferred_lang')}>
+                  <option value="en">English</option>
+                  <option value="am">አማርኛ (Amharic)</option>
+                  <option value="om">Afaan Oromoo</option>
+                </select>
+              </div>
             </>
           )}
           {err && <p className="err">{err}</p>}
-          <button className="btn primary block" disabled={busy}>
-            {busy ? 'Please wait...' : mode === 'login' ? 'Log in' : 'Register'}
+          <button className="btn primary block" disabled={busy} style={{ marginTop: '8px' }}>
+            {busy ? 'Please wait...' : mode === 'login' ? 'Log in' : 'Create Account'}
           </button>
           <button type="button" className="btn block" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>
             {mode === 'login' ? 'New here? Create an account' : 'Have an account? Log in'}
