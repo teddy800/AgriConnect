@@ -47,7 +47,7 @@ export async function checkDatabaseHealth() {
   try {
     await pool.query('SELECT 1');
     const latency = Math.round(performance.now() - start);
-    
+
     return {
       status: 'healthy',
       latency: `${latency}ms`,
@@ -103,7 +103,7 @@ export function performanceMonitor() {
     // Capture response
     res.on('finish', () => {
       const duration = Math.round(performance.now() - start);
-      
+
       // Log slow requests (>1000ms)
       if (duration > 1000) {
         logger.warn('Slow request detected', {

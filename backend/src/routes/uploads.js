@@ -10,7 +10,10 @@ const upload = multer({
   storage: multer.diskStorage({
     destination: 'uploads',
     filename: (_, file, cb) =>
-      cb(null, `${Date.now()}-${Math.round(Math.random() * 1e6)}${path.extname(file.originalname).toLowerCase()}`)
+      cb(
+        null,
+        `${Date.now()}-${Math.round(Math.random() * 1e6)}${path.extname(file.originalname).toLowerCase()}`
+      )
   }),
   limits: { fileSize: 2 * 1024 * 1024 },
   fileFilter: (_, file, cb) => cb(null, /^image\/(jpeg|png|webp)$/.test(file.mimetype))
@@ -19,7 +22,8 @@ const upload = multer({
 const r = Router();
 
 r.post('/', auth, role('farmer'), upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'Upload a JPG, PNG or WebP image under 2 MB.' });
+  if (!req.file)
+    return res.status(400).json({ error: 'Upload a JPG, PNG or WebP image under 2 MB.' });
   res.status(201).json({ url: `/uploads/${req.file.filename}` });
 });
 

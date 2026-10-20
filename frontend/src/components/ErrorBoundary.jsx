@@ -38,7 +38,7 @@ class ErrorBoundary extends Component {
 
   logErrorToService = (error, errorInfo) => {
     // In production, send to error tracking service (Sentry, LogRocket, etc.)
-    if (process.env.NODE_ENV === 'production') {
+    if (import.meta.env.MODE === 'production') {
       try {
         // Example: Send to API endpoint
         fetch('/api/errors', {
@@ -103,7 +103,7 @@ class ErrorBoundary extends Component {
               We apologize for the inconvenience. An unexpected error occurred.
             </p>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details style={{
                 backgroundColor: '#f5f5f5',
                 padding: '1rem',

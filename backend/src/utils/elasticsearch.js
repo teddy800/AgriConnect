@@ -22,10 +22,13 @@ export async function initializeElasticsearch() {
   try {
     esClient = new Client({
       node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
-      auth: process.env.ELASTICSEARCH_USER && process.env.ELASTICSEARCH_PASSWORD ? {
-        username: process.env.ELASTICSEARCH_USER,
-        password: process.env.ELASTICSEARCH_PASSWORD
-      } : undefined,
+      auth:
+        process.env.ELASTICSEARCH_USER && process.env.ELASTICSEARCH_PASSWORD
+          ? {
+              username: process.env.ELASTICSEARCH_USER,
+              password: process.env.ELASTICSEARCH_PASSWORD
+            }
+          : undefined,
       maxRetries: 3,
       requestTimeout: 10000
     });
@@ -33,7 +36,7 @@ export async function initializeElasticsearch() {
     // Test connection
     const health = await esClient.cluster.health();
     isConnected = true;
-    
+
     logger.info('✅ Elasticsearch connected', {
       clusterName: health.cluster_name,
       status: health.status,
@@ -113,7 +116,7 @@ async function createIndices() {
   for (const { index, mappings } of indices) {
     try {
       const exists = await esClient.indices.exists({ index });
-      
+
       if (!exists) {
         await esClient.indices.create({
           index,
@@ -289,9 +292,7 @@ export async function getSuggestions(query, field = 'title') {
               }
             }
           ],
-          filter: [
-            { term: { status: 'active' } }
-          ]
+          filter: [{ term: { status: 'active' } }]
         }
       },
       _source: [field, 'crop_name', 'region_name']

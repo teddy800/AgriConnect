@@ -1,7 +1,8 @@
 {
   "env": {
     "browser": true,
-    "es2021": true
+    "es2021": true,
+    "node": true
   },
   "extends": [
     "eslint:recommended",
@@ -16,10 +17,9 @@
       "jsx": true
     }
   },
-  "plugins": ["react", "react-hooks", "react-refresh"],
+  "plugins": ["react", "react-hooks"],
   "rules": {
     "react/prop-types": "off",
-    "react-refresh/only-export-components": "warn",
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn"

@@ -17,7 +17,7 @@ const router = express.Router();
 router.get('/conversations', auth, async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     // Get all conversations where user is participant
     const conversations = await q(
       `SELECT DISTINCT ON (conversation_id)
@@ -62,7 +62,7 @@ router.get('/conversations', auth, async (req, res) => {
       ORDER BY conversation_id, m.created_at DESC NULLS LAST`,
       [userId]
     );
-    
+
     res.json({
       conversations,
       total: conversations.length,
@@ -82,11 +82,11 @@ router.get('/conversation/:userId', auth, async (req, res) => {
   try {
     const currentUserId = req.user.id;
     const otherUserId = req.params.userId;
-    
+
     if (currentUserId === otherUserId) {
       return res.status(400).json({ error: 'Cannot message yourself' });
     }
-    
+
     // Check if conversation exists
     let [conversation] = await q(
       `SELECT id, user1_id, user2_id, created_at
@@ -94,7 +94,7 @@ router.get('/conversation/:userId', auth, async (req, res) => {
        WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1)`,
       [currentUserId, otherUserId]
     );
-    
+
     // Create conversation if doesn't exist
     if (!conversation) {
       [conversation] = await q(
@@ -103,24 +103,23 @@ router.get('/conversation/:userId', auth, async (req, res) => {
          RETURNING id, user1_id, user2_id, created_at`,
         [currentUserId, otherUserId]
       );
-      
-      logger.info('New conversation created', { 
+
+      logger.info('New conversation created', {
         conversationId: conversation.id,
         user1: currentUserId,
         user2: otherUserId
       });
     }
-    
+
     // Get other user info
-    const [otherUser] = await q(
-      'SELECT id, full_name, phone, role FROM users WHERE id = $1',
-      [otherUserId]
-    );
-    
+    const [otherUser] = await q('SELECT id, full_name, phone, role FROM users WHERE id = $1', [
+      otherUserId
+    ]);
+
     if (!otherUser) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     // Get messages
     const messages = await q(
       `SELECT id, sender_id, receiver_id, message_text, is_read, created_at
@@ -129,14 +128,14 @@ router.get('/conversation/:userId', auth, async (req, res) => {
        ORDER BY created_at ASC`,
       [conversation.id]
     );
-    
+
     // Mark messages as read
     await q(
       `UPDATE messages SET is_read = true 
        WHERE conversation_id = $1 AND receiver_id = $2 AND is_read = false`,
       [conversation.id, currentUserId]
     );
-    
+
     res.json({
       conversation_id: conversation.id,
       other_user: otherUser,
@@ -160,36 +159,36 @@ router.post('/send', auth, async (req, res) => {
   try {
     const senderId = req.user.id;
     const { receiver_id, message_text } = req.body;
-    
+
     if (!receiver_id || !message_text) {
       return res.status(400).json({ error: 'Receiver ID and message text are required' });
     }
-    
+
     if (senderId === receiver_id) {
       return res.status(400).json({ error: 'Cannot send message to yourself' });
     }
-    
+
     if (message_text.trim().length === 0) {
       return res.status(400).json({ error: 'Message cannot be empty' });
     }
-    
+
     if (message_text.length > 5000) {
       return res.status(400).json({ error: 'Message is too long (max 5000 characters)' });
     }
-    
+
     // Check if receiver exists
     const [receiver] = await q('SELECT id FROM users WHERE id = $1', [receiver_id]);
     if (!receiver) {
       return res.status(404).json({ error: 'Receiver not found' });
     }
-    
+
     // Get or create conversation
     let [conversation] = await q(
       `SELECT id FROM conversations
        WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1)`,
       [senderId, receiver_id]
     );
-    
+
     if (!conversation) {
       [conversation] = await q(
         `INSERT INTO conversations (user1_id, user2_id, created_at)
@@ -198,7 +197,7 @@ router.post('/send', auth, async (req, res) => {
         [senderId, receiver_id]
       );
     }
-    
+
     // Insert message
     const [message] = await q(
       `INSERT INTO messages (conversation_id, sender_id, receiver_id, message_text, is_read, created_at)
@@ -206,7 +205,7 @@ router.post('/send', auth, async (req, res) => {
        RETURNING id, conversation_id, sender_id, receiver_id, message_text, is_read, created_at`,
       [conversation.id, senderId, receiver_id, message_text.trim()]
     );
-    
+
     // Emit WebSocket event if io is available
     const io = req.app.get('io');
     if (io) {
@@ -219,14 +218,14 @@ router.post('/send', auth, async (req, res) => {
         }
       });
     }
-    
+
     logger.info('Message sent', {
       messageId: message.id,
       from: senderId,
       to: receiver_id,
       conversationId: conversation.id
     });
-    
+
     res.json({
       success: true,
       message,
@@ -246,7 +245,7 @@ router.put('/:messageId/read', auth, async (req, res) => {
   try {
     const messageId = parseInt(req.params.messageId);
     const userId = req.user.id;
-    
+
     const [message] = await q(
       `UPDATE messages 
        SET is_read = true 
@@ -254,11 +253,11 @@ router.put('/:messageId/read', auth, async (req, res) => {
        RETURNING id, is_read`,
       [messageId, userId]
     );
-    
+
     if (!message) {
       return res.status(404).json({ error: 'Message not found or not authorized' });
     }
-    
+
     res.json({ success: true, message });
   } catch (error) {
     logger.error('Mark read error', { error: error.message });
@@ -273,12 +272,12 @@ router.put('/:messageId/read', auth, async (req, res) => {
 router.get('/unread-count', auth, async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     const [result] = await q(
       'SELECT COUNT(*) as unread_count FROM messages WHERE receiver_id = $1 AND is_read = false',
       [userId]
     );
-    
+
     res.json({ unread_count: parseInt(result.unread_count) || 0 });
   } catch (error) {
     logger.error('Unread count error', { error: error.message });
@@ -294,17 +293,17 @@ router.delete('/conversation/:conversationId', auth, async (req, res) => {
   try {
     const conversationId = parseInt(req.params.conversationId);
     const userId = req.user.id;
-    
+
     // Verify user is part of conversation
     const [conversation] = await q(
       'SELECT id FROM conversations WHERE id = $1 AND (user1_id = $2 OR user2_id = $2)',
       [conversationId, userId]
     );
-    
+
     if (!conversation) {
       return res.status(404).json({ error: 'Conversation not found' });
     }
-    
+
     // For now, just mark messages as deleted for this user
     // In production, you might want a separate deleted_by_user field
     await q(
@@ -313,7 +312,7 @@ router.delete('/conversation/:conversationId', auth, async (req, res) => {
        WHERE conversation_id = $1 AND receiver_id = $2`,
       [conversationId, userId]
     );
-    
+
     res.json({ success: true, message: 'Conversation archived' });
   } catch (error) {
     logger.error('Delete conversation error', { error: error.message });
@@ -329,7 +328,7 @@ router.post('/typing', auth, (req, res) => {
   try {
     const { conversation_id, typing } = req.body;
     const userId = req.user.id;
-    
+
     const io = req.app.get('io');
     if (io) {
       // Broadcast typing status to conversation
@@ -339,7 +338,7 @@ router.post('/typing', auth, (req, res) => {
         typing
       });
     }
-    
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to send typing status' });

@@ -11,11 +11,11 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
  */
 export function generateToken(user) {
   return jwt.sign(
-    { 
-      id: user.id, 
-      phone: user.phone, 
+    {
+      id: user.id,
+      phone: user.phone,
       role: user.role,
-      name: user.full_name 
+      name: user.full_name
     },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
@@ -53,10 +53,10 @@ export async function auth(req, res, next) {
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
+
     // Verify and decode token
     const decoded = verifyToken(token);
-    
+
     // Check if user still exists and is active
     const [user] = await q(
       'SELECT id, phone, full_name, role, is_active, is_verified, region_id, preferred_lang FROM users WHERE id=$1',
@@ -92,8 +92,8 @@ export function role(...allowedRoles) {
     }
 
     if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        error: `Access denied. Required role: ${allowedRoles.join(' or ')}. Your role: ${req.user.role}` 
+      return res.status(403).json({
+        error: `Access denied. Required role: ${allowedRoles.join(' or ')}. Your role: ${req.user.role}`
       });
     }
 
@@ -133,37 +133,40 @@ const loginAttempts = new Map();
 export function checkRateLimit(identifier, maxAttempts = 5, windowMs = 15 * 60 * 1000) {
   const now = Date.now();
   const attempts = loginAttempts.get(identifier) || [];
-  
+
   // Remove old attempts outside the time window
   const recentAttempts = attempts.filter(timestamp => now - timestamp < windowMs);
-  
+
   if (recentAttempts.length >= maxAttempts) {
     const oldestAttempt = Math.min(...recentAttempts);
     const retryAfter = Math.ceil((oldestAttempt + windowMs - now) / 1000);
-    return { 
-      allowed: false, 
+    return {
+      allowed: false,
       retryAfter,
       message: `Too many attempts. Try again in ${retryAfter} seconds.`
     };
   }
-  
+
   // Record this attempt
   recentAttempts.push(now);
   loginAttempts.set(identifier, recentAttempts);
-  
+
   return { allowed: true };
 }
 
 // Cleanup old rate limit entries every hour
-setInterval(() => {
-  const now = Date.now();
-  const threshold = 60 * 60 * 1000; // 1 hour
-  for (const [key, attempts] of loginAttempts.entries()) {
-    const recentAttempts = attempts.filter(timestamp => now - timestamp < threshold);
-    if (recentAttempts.length === 0) {
-      loginAttempts.delete(key);
-    } else {
-      loginAttempts.set(key, recentAttempts);
+setInterval(
+  () => {
+    const now = Date.now();
+    const threshold = 60 * 60 * 1000; // 1 hour
+    for (const [key, attempts] of loginAttempts.entries()) {
+      const recentAttempts = attempts.filter(timestamp => now - timestamp < threshold);
+      if (recentAttempts.length === 0) {
+        loginAttempts.delete(key);
+      } else {
+        loginAttempts.set(key, recentAttempts);
+      }
     }
-  }
-}, 60 * 60 * 1000);
+  },
+  60 * 60 * 1000
+);

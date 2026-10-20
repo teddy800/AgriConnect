@@ -13,18 +13,18 @@ const OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
 // Ethiopian major cities and regions coordinates
 const ETHIOPIAN_LOCATIONS = {
-  'Addis Ababa': { lat: 9.0320, lon: 38.7469, region_id: 1 },
-  'Oromia': { lat: 8.5600, lon: 39.2700, region_id: 2 },
-  'Amhara': { lat: 11.6000, lon: 37.3900, region_id: 3 },
-  'Tigray': { lat: 13.4967, lon: 39.4753, region_id: 4 },
-  'Somali': { lat: 9.0000, lon: 43.0000, region_id: 5 },
-  'Afar': { lat: 11.7500, lon: 40.9500, region_id: 6 },
-  'SNNPR': { lat: 6.5000, lon: 37.0000, region_id: 7 },
-  'Benishangul-Gumuz': { lat: 10.7800, lon: 35.5700, region_id: 8 },
-  'Gambela': { lat: 8.2467, lon: 34.5900, region_id: 9 },
-  'Harari': { lat: 9.3150, lon: 42.1200, region_id: 10 },
-  'Dire Dawa': { lat: 9.5930, lon: 41.8660, region_id: 11 },
-  'Sidama': { lat: 6.8500, lon: 38.4500, region_id: 12 }
+  'Addis Ababa': { lat: 9.032, lon: 38.7469, region_id: 1 },
+  Oromia: { lat: 8.56, lon: 39.27, region_id: 2 },
+  Amhara: { lat: 11.6, lon: 37.39, region_id: 3 },
+  Tigray: { lat: 13.4967, lon: 39.4753, region_id: 4 },
+  Somali: { lat: 9.0, lon: 43.0, region_id: 5 },
+  Afar: { lat: 11.75, lon: 40.95, region_id: 6 },
+  SNNPR: { lat: 6.5, lon: 37.0, region_id: 7 },
+  'Benishangul-Gumuz': { lat: 10.78, lon: 35.57, region_id: 8 },
+  Gambela: { lat: 8.2467, lon: 34.59, region_id: 9 },
+  Harari: { lat: 9.315, lon: 42.12, region_id: 10 },
+  'Dire Dawa': { lat: 9.593, lon: 41.866, region_id: 11 },
+  Sidama: { lat: 6.85, lon: 38.45, region_id: 12 }
 };
 
 // ============================================
@@ -62,7 +62,7 @@ async function fetchWeatherData(lat, lon, type = 'current') {
 function generateMockWeatherData(location, region_id) {
   const now = Date.now();
   const baseTemp = 20 + Math.random() * 10;
-  
+
   return {
     location,
     region_id,
@@ -108,7 +108,8 @@ function generateMockWeatherData(location, region_id) {
       uv_index: Math.round(Math.random() * 11),
       weather: {
         main: Math.random() > 0.8 ? 'Rain' : Math.random() > 0.6 ? 'Clouds' : 'Clear',
-        description: Math.random() > 0.8 ? 'light rain' : Math.random() > 0.6 ? 'few clouds' : 'clear sky',
+        description:
+          Math.random() > 0.8 ? 'light rain' : Math.random() > 0.6 ? 'few clouds' : 'clear sky',
         icon: Math.random() > 0.8 ? '10d' : Math.random() > 0.6 ? '02d' : '01d'
       }
     }))
@@ -203,8 +204,10 @@ function generateAgricultureInsights(weatherData) {
 
   // Optimal conditions
   if (
-    current.temperature >= 20 && current.temperature <= 28 &&
-    current.humidity >= 40 && current.humidity <= 70 &&
+    current.temperature >= 20 &&
+    current.temperature <= 28 &&
+    current.humidity >= 40 &&
+    current.humidity <= 70 &&
     current.wind_speed < 8
   ) {
     insights.push({
@@ -227,7 +230,8 @@ function getCropRecommendations(weatherData, cropName = null) {
   const { current, daily } = weatherData;
   const recommendations = [];
 
-  const avgTemp = daily.slice(0, 3).reduce((sum, d) => sum + (d.temperature.max + d.temperature.min) / 2, 0) / 3;
+  const avgTemp =
+    daily.slice(0, 3).reduce((sum, d) => sum + (d.temperature.max + d.temperature.min) / 2, 0) / 3;
   const totalRain = daily.slice(0, 7).reduce((sum, d) => sum + d.precipitation_amount, 0);
 
   // General recommendations
@@ -285,7 +289,7 @@ function getCropRecommendations(weatherData, cropName = null) {
 router.get('/current', optionalAuth, async (req, res) => {
   try {
     const { region_id, lat, lon, location } = req.query;
-    
+
     let weatherData;
     let locationName;
     let coordinates;
@@ -370,7 +374,7 @@ router.get('/current', optionalAuth, async (req, res) => {
 router.get('/forecast', optionalAuth, async (req, res) => {
   try {
     const { region_id, lat, lon, location } = req.query;
-    
+
     let coordinates;
     let locationName;
 
@@ -394,7 +398,7 @@ router.get('/forecast', optionalAuth, async (req, res) => {
       locationName = 'Addis Ababa';
     }
 
-    let weatherData = generateMockWeatherData(locationName, coordinates.region_id);
+    const weatherData = generateMockWeatherData(locationName, coordinates.region_id);
 
     // Try to fetch real data if API key available
     if (OPENWEATHER_API_KEY) {
@@ -436,14 +440,14 @@ router.get('/locations', (req, res) => {
 router.get('/alerts', auth, async (req, res) => {
   try {
     const [region] = await q('SELECT name FROM regions WHERE id=$1', [req.user.region_id]);
-    
+
     if (!region || !ETHIOPIAN_LOCATIONS[region.name]) {
       return res.json({ alerts: [] });
     }
 
     const coordinates = ETHIOPIAN_LOCATIONS[region.name];
     const weatherData = generateMockWeatherData(region.name, coordinates.region_id);
-    
+
     // Generate critical alerts
     const alerts = weatherData.insights
       .filter(insight => insight.priority === 'high')
@@ -467,7 +471,7 @@ router.get('/alerts', auth, async (req, res) => {
 router.get('/agriculture-advice', optionalAuth, async (req, res) => {
   try {
     const { crop_name, region_id } = req.query;
-    
+
     let coordinates;
     let locationName = 'Ethiopia';
 

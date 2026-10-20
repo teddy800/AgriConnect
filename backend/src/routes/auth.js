@@ -2,7 +2,8 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { q } from '../db.js';
-import { generateToken, checkRateLimit } from '../middleware/auth.js';
+import { generateToken, checkRateLimit, auth } from '../middleware/auth.js';
+import { getUserPermissions } from '../middleware/rbac.js';
 
 const r = Router();
 
@@ -14,7 +15,9 @@ const registerSchema = z.object({
   phone: z.string().regex(phoneRegex, 'Phone must start with 09 or 07 and be 10 digits'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   full_name: z.string().min(2, 'Full name must be at least 2 characters').max(100),
-  role: z.enum(['farmer', 'buyer'], { errorMap: () => ({ message: 'Role must be farmer or buyer' }) }),
+  role: z.enum(['farmer', 'buyer'], {
+    errorMap: () => ({ message: 'Role must be farmer or buyer' })
+  }),
   region_id: z.number().int().positive().optional(),
   preferred_lang: z.enum(['en', 'am', 'om']).default('en')
 });
@@ -34,8 +37,8 @@ r.post('/register', async (req, res) => {
     // Validate request body
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ 
-        error: parsed.error.issues[0].message 
+      return res.status(400).json({
+        error: parsed.error.issues[0].message
       });
     }
 
@@ -113,8 +116,8 @@ r.post('/login', async (req, res) => {
     // Validate request body
     const parsed = loginSchema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ 
-        error: parsed.error.issues[0].message 
+      return res.status(400).json({
+        error: parsed.error.issues[0].message
       });
     }
 
@@ -141,8 +144,8 @@ r.post('/login', async (req, res) => {
 
     // Check if account is active
     if (!user.is_active) {
-      return res.status(403).json({ 
-        error: 'Your account has been deactivated. Please contact support.' 
+      return res.status(403).json({
+        error: 'Your account has been deactivated. Please contact support.'
       });
     }
 
@@ -237,5 +240,11 @@ r.post('/change-password', async (req, res) => {
     res.status(500).json({ error: 'Password change failed.' });
   }
 });
+
+/**
+ * GET /api/auth/permissions
+ * Get current user's permissions
+ */
+r.get('/permissions', auth, getUserPermissions);
 
 export default r;

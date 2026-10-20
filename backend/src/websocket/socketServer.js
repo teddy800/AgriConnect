@@ -30,8 +30,9 @@ export function initializeWebSocket(httpServer) {
   // Authentication middleware
   io.use(async (socket, next) => {
     try {
-      const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
-      
+      const token =
+        socket.handshake.auth.token || socket.handshake.headers.authorization?.split(' ')[1];
+
       if (!token) {
         return next(new Error('Authentication required'));
       }
@@ -40,13 +41,13 @@ export function initializeWebSocket(httpServer) {
       socket.userId = decoded.id;
       socket.userRole = decoded.role;
       socket.userName = decoded.name;
-      
+
       logger.info('WebSocket client authenticated', {
         userId: socket.userId,
         role: socket.userRole,
         socketId: socket.id
       });
-      
+
       next();
     } catch (error) {
       logger.warn('WebSocket authentication failed', { error: error.message });
@@ -55,12 +56,12 @@ export function initializeWebSocket(httpServer) {
   });
 
   // Connection handler
-  io.on('connection', (socket) => {
+  io.on('connection', socket => {
     const userId = socket.userId;
-    
+
     // Store connection
     connectedUsers.set(userId, socket);
-    
+
     logger.info('WebSocket client connected', {
       userId,
       socketId: socket.id,
@@ -78,30 +79,30 @@ export function initializeWebSocket(httpServer) {
     socket.join(`user:${userId}`);
 
     // Handle room subscriptions
-    socket.on('subscribe:prices', (data) => {
+    socket.on('subscribe:prices', data => {
       const { cropIds = [] } = data;
-      
+
       cropIds.forEach(cropId => {
         const room = `prices:crop:${cropId}`;
         socket.join(room);
-        
+
         if (!roomSubscriptions.has(room)) {
           roomSubscriptions.set(room, new Set());
         }
         roomSubscriptions.get(room).add(userId);
       });
-      
+
       logger.info('User subscribed to price updates', { userId, cropIds });
       socket.emit('subscribed:prices', { cropIds, success: true });
     });
 
-    socket.on('unsubscribe:prices', (data) => {
+    socket.on('unsubscribe:prices', data => {
       const { cropIds = [] } = data;
-      
+
       cropIds.forEach(cropId => {
         const room = `prices:crop:${cropId}`;
         socket.leave(room);
-        
+
         const subscribers = roomSubscriptions.get(room);
         if (subscribers) {
           subscribers.delete(userId);
@@ -110,18 +111,18 @@ export function initializeWebSocket(httpServer) {
           }
         }
       });
-      
+
       logger.info('User unsubscribed from price updates', { userId, cropIds });
       socket.emit('unsubscribed:prices', { cropIds, success: true });
     });
 
     // Subscribe to marketplace updates
-    socket.on('subscribe:marketplace', (data) => {
+    socket.on('subscribe:marketplace', data => {
       const { regionId, cropId } = data;
-      
+
       if (regionId) socket.join(`marketplace:region:${regionId}`);
       if (cropId) socket.join(`marketplace:crop:${cropId}`);
-      
+
       logger.info('User subscribed to marketplace', { userId, regionId, cropId });
       socket.emit('subscribed:marketplace', { success: true });
     });
@@ -139,9 +140,9 @@ export function initializeWebSocket(httpServer) {
     });
 
     // Disconnect handler
-    socket.on('disconnect', (reason) => {
+    socket.on('disconnect', reason => {
       connectedUsers.delete(userId);
-      
+
       // Clean up room subscriptions
       roomSubscriptions.forEach((subscribers, room) => {
         subscribers.delete(userId);
@@ -149,7 +150,7 @@ export function initializeWebSocket(httpServer) {
           roomSubscriptions.delete(room);
         }
       });
-      
+
       logger.info('WebSocket client disconnected', {
         userId,
         socketId: socket.id,
@@ -159,7 +160,7 @@ export function initializeWebSocket(httpServer) {
     });
 
     // Error handler
-    socket.on('error', (error) => {
+    socket.on('error', error => {
       logger.error('WebSocket error', {
         userId,
         socketId: socket.id,
@@ -177,7 +178,7 @@ export function initializeWebSocket(httpServer) {
 export function broadcastPriceUpdate(io, priceData) {
   const { crop_id, market_id, price, recorded_on } = priceData;
   const room = `prices:crop:${crop_id}`;
-  
+
   io.to(room).emit('price:update', {
     cropId: crop_id,
     marketId: market_id,
@@ -185,7 +186,7 @@ export function broadcastPriceUpdate(io, priceData) {
     recordedOn: recorded_on,
     timestamp: new Date().toISOString()
   });
-  
+
   logger.info('Price update broadcasted', {
     room,
     cropId: crop_id,
@@ -204,7 +205,7 @@ export function sendNotificationToUser(io, userId, notification) {
     createdAt: notification.created_at,
     isRead: notification.is_read
   });
-  
+
   logger.info('Notification sent to user', { userId, type: notification.type });
 }
 
@@ -224,7 +225,7 @@ export function broadcastNewListing(io, listing) {
     farmer: listing.farmer,
     timestamp: new Date().toISOString()
   });
-  
+
   // Broadcast to crop subscribers
   io.to(`marketplace:crop:${listing.crop_id}`).emit('listing:new', {
     id: listing.id,
@@ -237,7 +238,7 @@ export function broadcastNewListing(io, listing) {
     farmer: listing.farmer,
     timestamp: new Date().toISOString()
   });
-  
+
   logger.info('New listing broadcasted', { listingId: listing.id });
 }
 
@@ -252,7 +253,7 @@ export function sendInquiryUpdate(io, inquiry) {
     status: inquiry.status,
     timestamp: new Date().toISOString()
   });
-  
+
   // Notify farmer (if from listings table join)
   if (inquiry.farmer_id) {
     io.to(`user:${inquiry.farmer_id}`).emit('inquiry:update', {
@@ -262,7 +263,7 @@ export function sendInquiryUpdate(io, inquiry) {
       timestamp: new Date().toISOString()
     });
   }
-  
+
   logger.info('Inquiry update sent', { inquiryId: inquiry.id, status: inquiry.status });
 }
 

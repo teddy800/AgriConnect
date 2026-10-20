@@ -14,7 +14,7 @@ const router = express.Router();
  * Knowledge base for Ethiopian agriculture
  */
 const CROP_KNOWLEDGE_BASE = {
-  'Teff': {
+  Teff: {
     category: 'Cereal',
     optimal_temp: { min: 10, max: 27, ideal: 18 },
     growing_season: 'June to November',
@@ -36,7 +36,7 @@ const CROP_KNOWLEDGE_BASE = {
       'Harvest when moisture is low to prevent molding'
     ]
   },
-  'Maize': {
+  Maize: {
     category: 'Cereal',
     optimal_temp: { min: 18, max: 32, ideal: 25 },
     growing_season: 'March to July or July to December',
@@ -58,7 +58,7 @@ const CROP_KNOWLEDGE_BASE = {
       'Hand pollination can increase yield in small plots'
     ]
   },
-  'Coffee': {
+  Coffee: {
     category: 'Cash Crop',
     optimal_temp: { min: 15, max: 24, ideal: 20 },
     growing_season: 'Year-round (perennial)',
@@ -80,7 +80,7 @@ const CROP_KNOWLEDGE_BASE = {
       'Implement integrated pest management'
     ]
   },
-  'Wheat': {
+  Wheat: {
     category: 'Cereal',
     optimal_temp: { min: 15, max: 25, ideal: 20 },
     growing_season: 'July to November',
@@ -102,7 +102,7 @@ const CROP_KNOWLEDGE_BASE = {
       'Store in clean, dry conditions'
     ]
   },
-  'Barley': {
+  Barley: {
     category: 'Cereal',
     optimal_temp: { min: 10, max: 20, ideal: 15 },
     growing_season: 'June to November',
@@ -133,7 +133,8 @@ const BEST_PRACTICES = {
   'Soil Management': [
     {
       title: 'Crop Rotation',
-      description: 'Rotate cereal crops with legumes to improve soil nitrogen and break pest cycles.',
+      description:
+        'Rotate cereal crops with legumes to improve soil nitrogen and break pest cycles.',
       importance: 'High',
       benefits: ['Improved soil fertility', 'Reduced pest pressure', 'Better yields'],
       steps: [
@@ -250,7 +251,7 @@ const BEST_PRACTICES = {
  * Seasonal calendar for Ethiopian agriculture
  */
 const SEASONAL_CALENDAR = {
-  'Belg': {
+  Belg: {
     season: 'Small Rains (February - May)',
     activities: [
       'Plant short-season crops (maize, sorghum)',
@@ -261,7 +262,7 @@ const SEASONAL_CALENDAR = {
     crops_to_plant: ['Maize', 'Sorghum', 'Haricot bean', 'Vegetables'],
     weather_watch: 'Monitor rainfall patterns for planting timing'
   },
-  'Meher': {
+  Meher: {
     season: 'Main Rains (June - September)',
     activities: [
       'Main planting season for cereals',
@@ -272,7 +273,7 @@ const SEASONAL_CALENDAR = {
     crops_to_plant: ['Teff', 'Wheat', 'Barley', 'Maize', 'Sorghum', 'Pulses'],
     weather_watch: 'Peak rainfall - ensure drainage'
   },
-  'Bega': {
+  Bega: {
     season: 'Dry Season (October - January)',
     activities: [
       'Main harvest season',
@@ -297,9 +298,9 @@ const SEASONAL_CALENDAR = {
 router.get('/crops', optionalAuth, async (req, res) => {
   try {
     const { crop_name, category } = req.query;
-    
+
     let crops = Object.keys(CROP_KNOWLEDGE_BASE);
-    
+
     // Filter by specific crop
     if (crop_name) {
       const cropData = CROP_KNOWLEDGE_BASE[crop_name];
@@ -316,12 +317,12 @@ router.get('/crops', optionalAuth, async (req, res) => {
         ]
       });
     }
-    
+
     // Filter by category
     if (category) {
       crops = crops.filter(c => CROP_KNOWLEDGE_BASE[c].category === category);
     }
-    
+
     // Return all crops summary
     const cropsSummary = crops.map(name => ({
       name,
@@ -331,7 +332,7 @@ router.get('/crops', optionalAuth, async (req, res) => {
       yield: CROP_KNOWLEDGE_BASE[name].yield_potential,
       demand: CROP_KNOWLEDGE_BASE[name].market_demand
     }));
-    
+
     res.json({ crops: cropsSummary, total: cropsSummary.length });
   } catch (error) {
     logger.error('Advisory crops error', { error: error.message });
@@ -346,7 +347,7 @@ router.get('/crops', optionalAuth, async (req, res) => {
 router.get('/best-practices', optionalAuth, (req, res) => {
   try {
     const { category } = req.query;
-    
+
     if (category && BEST_PRACTICES[category]) {
       return res.json({
         category,
@@ -354,7 +355,7 @@ router.get('/best-practices', optionalAuth, (req, res) => {
         total: BEST_PRACTICES[category].length
       });
     }
-    
+
     // Return all categories
     const allPractices = Object.keys(BEST_PRACTICES).map(cat => ({
       category: cat,
@@ -365,7 +366,7 @@ router.get('/best-practices', optionalAuth, (req, res) => {
         importance: p.importance
       }))
     }));
-    
+
     res.json({ categories: allPractices });
   } catch (error) {
     logger.error('Best practices error', { error: error.message });
@@ -380,13 +381,13 @@ router.get('/best-practices', optionalAuth, (req, res) => {
 router.get('/seasonal-calendar', optionalAuth, (req, res) => {
   try {
     const currentMonth = new Date().getMonth() + 1; // 1-12
-    
+
     // Determine current season
     let currentSeason;
     if (currentMonth >= 2 && currentMonth <= 5) currentSeason = 'Belg';
     else if (currentMonth >= 6 && currentMonth <= 9) currentSeason = 'Meher';
     else currentSeason = 'Bega';
-    
+
     res.json({
       current_season: currentSeason,
       current_month: currentMonth,
@@ -407,21 +408,21 @@ router.get('/seasonal-calendar', optionalAuth, (req, res) => {
 router.post('/ask', auth, async (req, res) => {
   try {
     const { question, crop, topic } = req.body;
-    
+
     if (!question) {
       return res.status(400).json({ error: 'Question is required' });
     }
-    
+
     // Log the question
     await q(
       `INSERT INTO advisory_questions (user_id, question, crop, topic, created_at) 
        VALUES ($1, $2, $3, $4, NOW())`,
       [req.user.id, question, crop || null, topic || null]
     ).catch(() => {}); // Soft fail if table doesn't exist
-    
+
     // Simple AI logic - match keywords to responses
     const answer = generateAnswer(question, crop, topic);
-    
+
     res.json({
       question,
       answer: answer.text,
@@ -442,16 +443,16 @@ router.post('/ask', auth, async (req, res) => {
 router.get('/recommendations', auth, async (req, res) => {
   try {
     const userId = req.user.id;
-    const userRegion = req.user.region_id;
-    
+    // const userRegion = req.user.region_id; // Reserved for future region-specific recommendations
+
     // Get user's crops from listings
     const userCrops = await q(
       'SELECT DISTINCT crop_name FROM listings WHERE seller_id=$1 AND status=$2',
       [userId, 'active']
     );
-    
+
     const recommendations = [];
-    
+
     // Generate recommendations based on user's crops
     for (const { crop_name } of userCrops) {
       if (CROP_KNOWLEDGE_BASE[crop_name]) {
@@ -466,14 +467,14 @@ router.get('/recommendations', auth, async (req, res) => {
         });
       }
     }
-    
+
     // Add seasonal recommendations
     const currentMonth = new Date().getMonth() + 1;
     let currentSeason;
     if (currentMonth >= 2 && currentMonth <= 5) currentSeason = 'Belg';
     else if (currentMonth >= 6 && currentMonth <= 9) currentSeason = 'Meher';
     else currentSeason = 'Bega';
-    
+
     recommendations.push({
       type: 'seasonal',
       priority: 'medium',
@@ -481,7 +482,7 @@ router.get('/recommendations', auth, async (req, res) => {
       activities: SEASONAL_CALENDAR[currentSeason].activities,
       crops_to_consider: SEASONAL_CALENDAR[currentSeason].crops_to_plant || []
     });
-    
+
     res.json({
       user_id: userId,
       total_recommendations: recommendations.length,
@@ -503,7 +504,7 @@ router.get('/recommendations', auth, async (req, res) => {
  */
 function generateAnswer(question, crop, topic) {
   const q = question.toLowerCase();
-  
+
   // Planting questions
   if (q.includes('when') && (q.includes('plant') || q.includes('sow'))) {
     if (crop && CROP_KNOWLEDGE_BASE[crop]) {
@@ -521,7 +522,7 @@ function generateAnswer(question, crop, topic) {
       resources: ['Ministry of Agriculture', 'Local extension services']
     };
   }
-  
+
   // Fertilizer questions
   if (q.includes('fertilizer') || q.includes('fertilize')) {
     if (crop && CROP_KNOWLEDGE_BASE[crop]) {
@@ -539,7 +540,7 @@ function generateAnswer(question, crop, topic) {
       resources: ['Agro-dealers', 'Extension agents']
     };
   }
-  
+
   // Pest/disease questions
   if (q.includes('pest') || q.includes('disease') || q.includes('insect')) {
     return {
@@ -549,7 +550,7 @@ function generateAnswer(question, crop, topic) {
       resources: ['Plant clinics', 'Extension services', 'Agro-vet shops']
     };
   }
-  
+
   // Watering questions
   if (q.includes('water') || q.includes('irrigat')) {
     return {
@@ -559,7 +560,7 @@ function generateAnswer(question, crop, topic) {
       resources: ['Irrigation suppliers', 'Water management guides']
     };
   }
-  
+
   // Harvest questions
   if (q.includes('harvest') || q.includes('when to pick')) {
     if (crop && CROP_KNOWLEDGE_BASE[crop]) {
@@ -577,7 +578,7 @@ function generateAnswer(question, crop, topic) {
       resources: ['Harvest equipment', 'Storage solutions']
     };
   }
-  
+
   // General response
   return {
     text: 'Thank you for your question! For specific advice, please consult with local agricultural extension officers or visit your nearest farmer training center. They can provide guidance tailored to your location and conditions. You can also explore our best practices and crop guides.',

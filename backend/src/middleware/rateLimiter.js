@@ -16,12 +16,12 @@ if (REDIS_ENABLED) {
     password: process.env.REDIS_PASSWORD || undefined
   });
 
-  redisClient.on('error', (err) => {
+  redisClient.on('error', err => {
     console.error('Redis Client Error:', err);
     console.warn('⚠️  Rate limiting will use memory storage');
   });
 
-  redisClient.connect().catch((err) => {
+  redisClient.connect().catch(err => {
     console.error('Failed to connect to Redis:', err);
   });
 }
@@ -55,34 +55,39 @@ export const generalLimiter = rateLimit({
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
   handler: rateLimitHandler,
   skipSuccessfulRequests,
-  store: redisClient ? new RedisStore({
-    client: redisClient,
-    prefix: 'rl:general:'
-  }) : undefined
+  store: redisClient
+    ? new RedisStore({
+        client: redisClient,
+        prefix: 'rl:general:'
+      })
+    : undefined
 });
 
 /**
- * Authentication rate limiter - 5 attempts per 15 minutes
- * Stricter limit to prevent brute force attacks
+ * Authentication rate limiter - 10 attempts per 15 minutes
+ * Increased for development convenience
  */
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 login attempts per windowMs
+  max: process.env.NODE_ENV === 'development' ? 20 : 5, // Higher limit in development
   message: 'Too many login attempts from this IP, please try again after 15 minutes.',
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
     res.status(429).json({
       error: 'Too many authentication attempts.',
-      message: 'Your IP has been temporarily blocked due to multiple failed login attempts.',
+      message:
+        'Your IP has been temporarily blocked due to multiple failed login attempts.',
       retryAfter: '15 minutes',
       tip: 'Make sure you are using the correct phone number and password.'
     });
   },
-  store: redisClient ? new RedisStore({
-    client: redisClient,
-    prefix: 'rl:auth:'
-  }) : undefined
+  store: redisClient
+    ? new RedisStore({
+        client: redisClient,
+        prefix: 'rl:auth:'
+      })
+    : undefined
 });
 
 /**
@@ -101,10 +106,12 @@ export const registerLimiter = rateLimit({
       retryAfter: '1 hour'
     });
   },
-  store: redisClient ? new RedisStore({
-    client: redisClient,
-    prefix: 'rl:register:'
-  }) : undefined
+  store: redisClient
+    ? new RedisStore({
+        client: redisClient,
+        prefix: 'rl:register:'
+      })
+    : undefined
 });
 
 /**
@@ -117,10 +124,12 @@ export const uploadLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: rateLimitHandler,
-  store: redisClient ? new RedisStore({
-    client: redisClient,
-    prefix: 'rl:upload:'
-  }) : undefined
+  store: redisClient
+    ? new RedisStore({
+        client: redisClient,
+        prefix: 'rl:upload:'
+      })
+    : undefined
 });
 
 /**
@@ -134,10 +143,12 @@ export const searchLimiter = rateLimit({
   legacyHeaders: false,
   handler: rateLimitHandler,
   skipSuccessfulRequests: true,
-  store: redisClient ? new RedisStore({
-    client: redisClient,
-    prefix: 'rl:search:'
-  }) : undefined
+  store: redisClient
+    ? new RedisStore({
+        client: redisClient,
+        prefix: 'rl:search:'
+      })
+    : undefined
 });
 
 /**
@@ -150,10 +161,12 @@ export const priceLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: rateLimitHandler,
-  store: redisClient ? new RedisStore({
-    client: redisClient,
-    prefix: 'rl:price:'
-  }) : undefined
+  store: redisClient
+    ? new RedisStore({
+        client: redisClient,
+        prefix: 'rl:price:'
+      })
+    : undefined
 });
 
 /**
@@ -166,10 +179,12 @@ export const adminLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: rateLimitHandler,
-  store: redisClient ? new RedisStore({
-    client: redisClient,
-    prefix: 'rl:admin:'
-  }) : undefined
+  store: redisClient
+    ? new RedisStore({
+        client: redisClient,
+        prefix: 'rl:admin:'
+      })
+    : undefined
 });
 
 /**
@@ -184,10 +199,13 @@ export function createRateLimiter(options = {}) {
     legacyHeaders: false,
     handler: options.handler || rateLimitHandler,
     skipSuccessfulRequests: options.skipSuccessfulRequests || false,
-    store: redisClient && options.useRedis !== false ? new RedisStore({
-      client: redisClient,
-      prefix: options.prefix || 'rl:custom:'
-    }) : undefined
+    store:
+      redisClient && options.useRedis !== false
+        ? new RedisStore({
+            client: redisClient,
+            prefix: options.prefix || 'rl:custom:'
+          })
+        : undefined
   });
 }
 

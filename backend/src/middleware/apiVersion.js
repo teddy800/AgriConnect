@@ -14,15 +14,11 @@ export function detectApiVersion(req, res, next) {
   const pathMatch = req.path.match(/^\/api\/v(\d+)\//);
   if (pathMatch) {
     version = `v${pathMatch[1]}`;
-  }
-  
-  // Method 2: From custom header (API-Version: v1)
-  else if (req.headers['api-version']) {
+  } else if (req.headers['api-version']) {
+    // Method 2: From custom header (API-Version: v1)
     version = req.headers['api-version'];
-  }
-  
-  // Method 3: From query parameter (?version=v1)
-  else if (req.query.version) {
+  } else if (req.query.version) {
+    // Method 3: From query parameter (?version=v1)
     version = req.query.version;
     delete req.query.version; // Remove from query to avoid conflicts
   }
@@ -68,7 +64,10 @@ export function checkDeprecatedVersion(req, res, next) {
 
   if (deprecatedVersions[version]) {
     const deprecation = deprecatedVersions[version];
-    res.setHeader('Warning', `299 - "API version ${version} is deprecated. Use ${deprecation.replacement}. Sunset date: ${deprecation.sunset}"`);
+    res.setHeader(
+      'Warning',
+      `299 - "API version ${version} is deprecated. Use ${deprecation.replacement}. Sunset date: ${deprecation.sunset}"`
+    );
     res.setHeader('Sunset', deprecation.sunset);
   }
 
@@ -93,7 +92,7 @@ export function versionedResponse(versions) {
 
     // Replace response.json with versioned handler
     const originalJson = res.json.bind(res);
-    res.json = function(data) {
+    res.json = function (data) {
       const versionedData = handler(data, req);
       return originalJson(versionedData);
     };
@@ -109,11 +108,10 @@ export function redirectToVersioned(req, res, next) {
   // If path doesn't include version, redirect to v1
   if (!req.path.match(/^\/api\/v\d+\//)) {
     const versionedPath = req.path.replace(/^\/api\//, '/api/v1/');
-    
+
     // Preserve query parameters
-    const queryString = Object.keys(req.query).length > 0 
-      ? '?' + new URLSearchParams(req.query).toString()
-      : '';
+    const queryString =
+      Object.keys(req.query).length > 0 ? '?' + new URLSearchParams(req.query).toString() : '';
 
     return res.redirect(301, versionedPath + queryString);
   }

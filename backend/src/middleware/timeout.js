@@ -56,11 +56,11 @@ export function timeoutMiddleware(ms = DEFAULT_TIMEOUT) {
  * Custom timeout for specific operations
  */
 export const TIMEOUTS = {
-  SHORT: 5000,        // 5 seconds - for quick operations
-  MEDIUM: 15000,      // 15 seconds - for database queries
-  LONG: 30000,        // 30 seconds - for complex operations
-  UPLOAD: 60000,      // 60 seconds - for file uploads
-  SEARCH: 10000       // 10 seconds - for search operations
+  SHORT: 5000, // 5 seconds - for quick operations
+  MEDIUM: 15000, // 15 seconds - for database queries
+  LONG: 30000, // 30 seconds - for complex operations
+  UPLOAD: 60000, // 60 seconds - for file uploads
+  SEARCH: 10000 // 10 seconds - for search operations
 };
 
 /**
@@ -72,17 +72,17 @@ export function adaptiveTimeout(req, res, next) {
   // Short timeout for health checks
   if (req.path.includes('/health') || req.path.includes('/ping')) {
     timeout = TIMEOUTS.SHORT;
-  }
-  // Longer timeout for uploads
-  else if (req.path.includes('/upload') || req.method === 'POST' && req.is('multipart/form-data')) {
+  } else if (
+    req.path.includes('/upload') ||
+    (req.method === 'POST' && req.is('multipart/form-data'))
+  ) {
+    // Longer timeout for uploads
     timeout = TIMEOUTS.UPLOAD;
-  }
-  // Medium timeout for search
-  else if (req.path.includes('/search')) {
+  } else if (req.path.includes('/search')) {
+    // Medium timeout for search
     timeout = TIMEOUTS.SEARCH;
-  }
-  // Medium timeout for complex queries
-  else if (req.path.includes('/dashboard') || req.path.includes('/analytics')) {
+  } else if (req.path.includes('/dashboard') || req.path.includes('/analytics')) {
+    // Medium timeout for complex queries
     timeout = TIMEOUTS.MEDIUM;
   }
 

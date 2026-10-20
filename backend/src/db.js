@@ -9,20 +9,20 @@ const pool = new Pool({
   database: process.env.DB_NAME || 'agriconnect',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD,
-  max: 20,                      // Maximum pool size
-  idleTimeoutMillis: 30000,     // Close idle clients after 30s
+  max: 20, // Maximum pool size
+  idleTimeoutMillis: 30000, // Close idle clients after 30s
   connectionTimeoutMillis: 2000, // Fail fast on connection issues
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
 });
 
 // Connection error handling
-pool.on('error', (err) => {
+pool.on('error', err => {
   console.error('Unexpected database error:', err);
   process.exit(-1);
 });
 
 // Health check on startup
-pool.query('SELECT NOW()', (err) => {
+pool.query('SELECT NOW()', err => {
   if (err) {
     console.error('❌ Database connection failed:', err.message);
     process.exit(1);
@@ -41,12 +41,12 @@ export async function q(text, params = []) {
   try {
     const result = await pool.query(text, params);
     const duration = Date.now() - start;
-    
+
     // Log slow queries (>100ms) for optimization
     if (duration > 100) {
       console.warn(`⚠️  Slow query (${duration}ms):`, text.substring(0, 80) + '...');
     }
-    
+
     return result.rows;
   } catch (error) {
     console.error('Database query error:', error.message);

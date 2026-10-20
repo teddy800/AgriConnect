@@ -8,8 +8,12 @@ import swaggerUi from 'swagger-ui-express';
 import logger, { httpLogger, stream } from './utils/logger.js';
 import { generalLimiter, authLimiter } from './middleware/rateLimiter.js';
 import { sanitizeAll, validateNoSQLInjection } from './middleware/sanitizer.js';
-import { timeoutMiddleware, adaptiveTimeout } from './middleware/timeout.js';
-import { detectApiVersion, checkDeprecatedVersion, getApiVersionInfo } from './middleware/apiVersion.js';
+import { adaptiveTimeout } from './middleware/timeout.js';
+import {
+  detectApiVersion,
+  checkDeprecatedVersion,
+  getApiVersionInfo
+} from './middleware/apiVersion.js';
 import { swaggerDocument } from '../swagger.js';
 
 // Import advanced utilities
@@ -49,27 +53,31 @@ app.set('io', io);
 // ============================================
 // Security Middleware
 // ============================================
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"]
-    }
-  },
-  crossOriginEmbedderPolicy: false
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:']
+      }
+    },
+    crossOriginEmbedderPolicy: false
+  })
+);
 
 // ============================================
 // CORS Configuration
 // ============================================
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+);
 
 // ============================================
 // Body Parsing & Sanitization
@@ -111,10 +119,14 @@ app.use('/uploads', express.static('uploads'));
 // ============================================
 // API Documentation (Swagger)
 // ============================================
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'AgriConnect API Documentation'
-}));
+app.use(
+  '/api/docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'AgriConnect API Documentation'
+  })
+);
 
 // API version info endpoint
 app.get('/api/version', getApiVersionInfo);
@@ -123,8 +135,8 @@ app.get('/api/version', getApiVersionInfo);
 // Health Check Endpoint
 // ============================================
 app.get('/api/health', (_, res) => {
-  res.json({ 
-    ok: true, 
+  res.json({
+    ok: true,
     timestamp: new Date().toISOString(),
     service: 'AgriConnect API',
     version: '1.0.0',
@@ -156,7 +168,7 @@ app.use('/api/messages', messages);
 // ============================================
 app.use('/api/*', (req, res) => {
   logger.warn(`404 - Endpoint not found: ${req.method} ${req.originalUrl}`);
-  res.status(404).json({ 
+  res.status(404).json({
     error: 'Endpoint not found.',
     path: req.originalUrl,
     method: req.method
@@ -188,10 +200,10 @@ app.use((err, req, res, _next) => {
   if (err.name === 'UnauthorizedError') {
     return res.status(401).json({ error: 'Invalid or expired token.' });
   }
-  
+
   // Don't leak error details in production
   const isDev = process.env.NODE_ENV !== 'production';
-  res.status(err.status || 500).json({ 
+  res.status(err.status || 500).json({
     error: isDev ? err.message : 'Something went wrong on our side.',
     ...(isDev && { stack: err.stack })
   });
@@ -204,10 +216,10 @@ async function initializeServices() {
   try {
     // Initialize Redis cache
     await initializeRedis();
-    
+
     // Initialize Elasticsearch
     await initializeElasticsearch();
-    
+
     logger.info('✅ All advanced services initialized');
   } catch (error) {
     logger.error('Service initialization error', { error: error.message });
@@ -221,72 +233,78 @@ async function initializeServices() {
 const PORT = process.env.PORT || 4000;
 
 // Initialize services then start server
-initializeServices().then(() => {
-  httpServer.listen(PORT, () => {
-    logger.info('AgriConnect API Server Started', {
-      port: PORT,
-      environment: process.env.NODE_ENV || 'development',
-      nodeVersion: process.version,
-      features: {
-        websocket: io !== null,
-        redis: process.env.REDIS_ENABLED === 'true',
-        elasticsearch: process.env.ELASTICSEARCH_ENABLED === 'true'
-      }
-    });
+initializeServices()
+  .then(() => {
+    httpServer.listen(PORT, () => {
+      logger.info('AgriConnect API Server Started', {
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development',
+        nodeVersion: process.version,
+        features: {
+          websocket: io !== null,
+          redis: process.env.REDIS_ENABLED === 'true',
+          elasticsearch: process.env.ELASTICSEARCH_ENABLED === 'true'
+        }
+      });
 
-    console.log('');
-    console.log('🌾 ==========================================');
-    console.log('   AgriConnect API Server');
-    console.log('🌾 ==========================================');
-    console.log(`   🚀 Server running on port ${PORT}`);
-    console.log(`   🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`   📡 API: http://localhost:${PORT}/api`);
-    console.log(`   ❤️  Health: http://localhost:${PORT}/api/health`);
-    console.log(`   📚 Docs: http://localhost:${PORT}/api/docs`);
-    console.log(`   🔒 Security: Helmet, Rate Limiting, XSS Protection`);
-    console.log(`   📝 Logging: Winston (logs/)`);
-    console.log(`   ⏱️  Timeout: Adaptive (5s-60s based on route)`);
-    console.log(`   🔢 API Version: v1 (with versioning support)`);
-    console.log('');
-    console.log('   🚀 ADVANCED FEATURES:');
-    console.log(`   ${io ? '✅' : '❌'} WebSocket - Real-time updates`);
-    console.log(`   ${process.env.REDIS_ENABLED === 'true' ? '✅' : '❌'} Redis - High-performance caching`);
-    console.log(`   ${process.env.ELASTICSEARCH_ENABLED === 'true' ? '✅' : '❌'} Elasticsearch - Advanced search`);
-    console.log('🌾 ==========================================');
-    console.log('');
+      console.log('');
+      console.log('🌾 ==========================================');
+      console.log('   AgriConnect API Server');
+      console.log('🌾 ==========================================');
+      console.log(`   🚀 Server running on port ${PORT}`);
+      console.log(`   🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`   📡 API: http://localhost:${PORT}/api`);
+      console.log(`   ❤️  Health: http://localhost:${PORT}/api/health`);
+      console.log(`   📚 Docs: http://localhost:${PORT}/api/docs`);
+      console.log('   🔒 Security: Helmet, Rate Limiting, XSS Protection');
+      console.log('   📝 Logging: Winston (logs/)');
+      console.log('   ⏱️  Timeout: Adaptive (5s-60s based on route)');
+      console.log('   🔢 API Version: v1 (with versioning support)');
+      console.log('');
+      console.log('   🚀 ADVANCED FEATURES:');
+      console.log(`   ${io ? '✅' : '❌'} WebSocket - Real-time updates`);
+      console.log(
+        `   ${process.env.REDIS_ENABLED === 'true' ? '✅' : '❌'} Redis - High-performance caching`
+      );
+      console.log(
+        `   ${process.env.ELASTICSEARCH_ENABLED === 'true' ? '✅' : '❌'} Elasticsearch - Advanced search`
+      );
+      console.log('🌾 ==========================================');
+      console.log('');
+    });
+  })
+  .catch(error => {
+    logger.error('Failed to start server', { error: error.message });
+    process.exit(1);
   });
-}).catch(error => {
-  logger.error('Failed to start server', { error: error.message });
-  process.exit(1);
-});
 
 // ============================================
 // Graceful Shutdown
 // ============================================
 async function gracefulShutdown(signal) {
   logger.info(`${signal} signal received: closing server and connections`);
-  
+
   // Close HTTP server
   httpServer.close(async () => {
     logger.info('HTTP server closed');
-    
+
     // Close WebSocket connections
     if (io) {
       io.close(() => {
         logger.info('WebSocket connections closed');
       });
     }
-    
+
     // Close Redis connection
     await closeRedis();
-    
+
     // Close Elasticsearch connection
     await closeElasticsearch();
-    
+
     logger.info('All connections closed gracefully');
     process.exit(0);
   });
-  
+
   // Force close after 10 seconds
   setTimeout(() => {
     logger.error('Could not close connections in time, forcefully shutting down');

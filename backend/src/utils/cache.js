@@ -8,10 +8,10 @@ import logger from './logger.js';
 
 const REDIS_ENABLED = process.env.REDIS_ENABLED === 'true';
 const CACHE_TTL = {
-  SHORT: 60,           // 1 minute
-  MEDIUM: 300,         // 5 minutes
-  LONG: 1800,          // 30 minutes
-  VERY_LONG: 86400     // 24 hours
+  SHORT: 60, // 1 minute
+  MEDIUM: 300, // 5 minutes
+  LONG: 1800, // 30 minutes
+  VERY_LONG: 86400 // 24 hours
 };
 
 let redisClient = null;
@@ -37,7 +37,7 @@ export async function initializeRedis() {
       database: parseInt(process.env.REDIS_DB || '0', 10)
     });
 
-    redisClient.on('error', (err) => {
+    redisClient.on('error', err => {
       logger.error('Redis connection error', { error: err.message });
       isConnected = false;
     });
@@ -57,10 +57,10 @@ export async function initializeRedis() {
     });
 
     await redisClient.connect();
-    
+
     // Test connection
     await redisClient.ping();
-    
+
     return redisClient;
   } catch (error) {
     logger.error('Failed to initialize Redis', { error: error.message });
@@ -76,12 +76,12 @@ export async function get(key) {
 
   try {
     const value = await redisClient.get(key);
-    
+
     if (value) {
       logger.debug('Cache hit', { key });
       return JSON.parse(value);
     }
-    
+
     logger.debug('Cache miss', { key });
     return null;
   } catch (error) {
@@ -131,7 +131,7 @@ export async function delPattern(pattern) {
   try {
     const keys = await redisClient.keys(pattern);
     if (keys.length === 0) return 0;
-    
+
     await redisClient.del(keys);
     logger.info('Cache pattern deleted', { pattern, count: keys.length });
     return keys.length;
@@ -168,7 +168,7 @@ export async function getStats() {
     const info = await redisClient.info('stats');
     const memory = await redisClient.info('memory');
     const keyspace = await redisClient.info('keyspace');
-    
+
     return {
       enabled: true,
       connected: isConnected,
@@ -210,7 +210,7 @@ export function cacheMiddleware(ttl = CACHE_TTL.MEDIUM, keyPrefix = 'route') {
 
     try {
       const cached = await get(cacheKey);
-      
+
       if (cached) {
         logger.info('Serving from cache', { key: cacheKey });
         return res.json(cached);
@@ -218,8 +218,8 @@ export function cacheMiddleware(ttl = CACHE_TTL.MEDIUM, keyPrefix = 'route') {
 
       // Override res.json to cache the response
       const originalJson = res.json.bind(res);
-      res.json = function(data) {
-        set(cacheKey, data, ttl).catch(err => 
+      res.json = function (data) {
+        set(cacheKey, data, ttl).catch(err =>
           logger.error('Failed to cache response', { error: err.message })
         );
         return originalJson(data);
@@ -248,7 +248,11 @@ export async function invalidateResource(resourceType, resourceId) {
     totalDeleted += await delPattern(pattern);
   }
 
-  logger.info('Resource cache invalidated', { resourceType, resourceId, keysDeleted: totalDeleted });
+  logger.info('Resource cache invalidated', {
+    resourceType,
+    resourceId,
+    keysDeleted: totalDeleted
+  });
   return totalDeleted;
 }
 

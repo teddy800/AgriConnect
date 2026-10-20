@@ -25,15 +25,15 @@ export function detectSuspiciousActivity(req, res, next) {
     /(eval\(|exec\(|system\()/i,
     /(<iframe|<object|<embed)/i
   ];
-  
+
   const checkString = JSON.stringify({
     body: req.body,
     query: req.query,
     params: req.params
   });
-  
+
   const isSuspicious = suspiciousPatterns.some(pattern => pattern.test(checkString));
-  
+
   if (isSuspicious) {
     logSecurity('Suspicious Activity Detected', 'warn', {
       ip: req.ip,
@@ -41,12 +41,12 @@ export function detectSuspiciousActivity(req, res, next) {
       method: req.method,
       userAgent: req.get('user-agent')
     });
-    
+
     return res.status(400).json({
       error: 'Invalid request detected. Your activity has been logged.'
     });
   }
-  
+
   next();
 }
 
@@ -58,12 +58,12 @@ const whitelistedIPs = new Set();
 
 export function ipFilter(req, res, next) {
   const clientIP = req.ip || req.connection.remoteAddress;
-  
+
   if (blacklistedIPs.has(clientIP)) {
     logSecurity('Blocked IP Attempted Access', 'warn', { ip: clientIP });
     return res.status(403).json({ error: 'Access denied.' });
   }
-  
+
   next();
 }
 
@@ -82,23 +82,23 @@ export function removeFromBlacklist(ip) {
  */
 export function requestSizeLimiter(maxSize = '10mb') {
   const maxBytes = parseSize(maxSize);
-  
+
   return (req, res, next) => {
     const contentLength = parseInt(req.get('content-length') || '0', 10);
-    
+
     if (contentLength > maxBytes) {
       logSecurity('Large Request Blocked', 'warn', {
         size: contentLength,
         maxSize: maxBytes,
         ip: req.ip
       });
-      
+
       return res.status(413).json({
         error: 'Request entity too large',
         maxSize
       });
     }
-    
+
     next();
   };
 }

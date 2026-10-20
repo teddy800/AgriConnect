@@ -231,7 +231,7 @@ r.get('/stats', async (req, res) => {
 r.get('/search', async (req, res) => {
   try {
     const { q: searchTerm } = req.query;
-    
+
     if (!searchTerm || searchTerm.length < 2) {
       return res.status(400).json({ error: 'Search term must be at least 2 characters.' });
     }

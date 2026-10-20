@@ -11,7 +11,7 @@ const r = Router();
 r.get('/series', async (req, res) => {
   const { crop_id, days = 7 } = req.query;
   if (!crop_id) return res.status(400).json({ error: 'crop_id is required.' });
-  
+
   // Cache key
   const cacheKey = `prices:series:${crop_id}:${days}`;
   const cached = await get(cacheKey);
@@ -21,8 +21,10 @@ r.get('/series', async (req, res) => {
     `SELECT mp.recorded_on::text AS date, m.name AS market, mp.price::float AS price
      FROM market_prices mp JOIN markets m ON m.id=mp.market_id
      WHERE mp.crop_id=$1 AND mp.recorded_on >= CURRENT_DATE-$2::int
-     ORDER BY mp.recorded_on`, [crop_id, days]);
-  
+     ORDER BY mp.recorded_on`,
+    [crop_id, days]
+  );
+
   // Cache for 5 minutes
   await set(cacheKey, rows, CACHE_TTL.MEDIUM);
   res.json(rows);
@@ -32,7 +34,7 @@ r.get('/series', async (req, res) => {
 r.get('/table', async (req, res) => {
   const { crop_id } = req.query;
   if (!crop_id) return res.status(400).json({ error: 'crop_id is required.' });
-  
+
   // Cache key
   const cacheKey = `prices:table:${crop_id}`;
   const cached = await get(cacheKey);
@@ -50,8 +52,10 @@ r.get('/table', async (req, res) => {
        SELECT price FROM market_prices
        WHERE crop_id=$1 AND market_id=l.market_id AND recorded_on <= l.recorded_on-7
        ORDER BY recorded_on DESC LIMIT 1) o ON TRUE
-     ORDER BY l.price DESC`, [crop_id]);
-  
+     ORDER BY l.price DESC`,
+    [crop_id]
+  );
+
   // Cache for 5 minutes
   await set(cacheKey, rows, CACHE_TTL.MEDIUM);
   res.json(rows);

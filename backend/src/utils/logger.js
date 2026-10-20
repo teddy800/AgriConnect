@@ -64,19 +64,15 @@ const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: fileFormat,
   defaultMeta: { service: 'agriconnect-api' },
-  transports: [
-    allLogsTransport,
-    errorLogsTransport,
-    httpLogsTransport
-  ],
+  transports: [allLogsTransport, errorLogsTransport, httpLogsTransport],
   exceptionHandlers: [
-    new winston.transports.File({ 
+    new winston.transports.File({
       filename: path.join(logsDir, 'exceptions.log'),
       format: fileFormat
     })
   ],
   rejectionHandlers: [
-    new winston.transports.File({ 
+    new winston.transports.File({
       filename: path.join(logsDir, 'rejections.log'),
       format: fileFormat
     })
@@ -85,10 +81,12 @@ const logger = winston.createLogger({
 
 // Add console transport in development
 if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: consoleFormat,
-    level: 'debug'
-  }));
+  logger.add(
+    new winston.transports.Console({
+      format: consoleFormat,
+      level: 'debug'
+    })
+  );
 }
 
 /**
@@ -96,7 +94,7 @@ if (process.env.NODE_ENV !== 'production') {
  */
 function httpLogger(req, res, next) {
   const start = Date.now();
-  
+
   // Log request
   logger.http('Incoming request', {
     method: req.method,
@@ -104,12 +102,12 @@ function httpLogger(req, res, next) {
     ip: req.ip || req.connection.remoteAddress,
     userAgent: req.get('user-agent')
   });
-  
+
   // Capture response
   const originalSend = res.send;
   res.send = function (body) {
     const duration = Date.now() - start;
-    
+
     logger.http('Outgoing response', {
       method: req.method,
       url: req.originalUrl,
@@ -117,10 +115,10 @@ function httpLogger(req, res, next) {
       duration: `${duration}ms`,
       contentLength: res.get('content-length') || body?.length || 0
     });
-    
+
     return originalSend.call(this, body);
   };
-  
+
   next();
 }
 
@@ -235,7 +233,7 @@ function createChildLogger(context = {}) {
  * Stream for Morgan HTTP logger integration
  */
 const stream = {
-  write: (message) => {
+  write: message => {
     logger.http(message.trim());
   }
 };

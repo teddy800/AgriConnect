@@ -17,13 +17,9 @@ const Messages = lazy(() => import('./pages/Messages.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
 const Settings = lazy(() => import('./pages/Settings.jsx'));
 const Notifications = lazy(() => import('./pages/Notifications.jsx'));
+const RBACDemo = lazy(() => import('./pages/RBACDemo.jsx'));
 
-const Soon = ({ title }) => (
-  <div className="card">
-    <h2>{title}</h2>
-    <p className="muted">This feature is coming soon. We're working hard to bring it to you!</p>
-  </div>
-);
+// Removed unused Soon component - can be added back when needed
 
 // Loading component for Suspense fallback
 const PageLoader = () => (
@@ -54,6 +50,7 @@ export default function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="settings" element={<Settings />} />
           <Route path="notifications" element={<Notifications />} />
+          <Route path="rbac" element={<RBACDemo />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

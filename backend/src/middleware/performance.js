@@ -42,10 +42,13 @@ export function initMetrics() {
   };
 
   // Reset metrics every hour
-  setInterval(() => {
-    global.metrics.responseTime = [];
-    global.metrics.requestCount = 0;
-  }, 60 * 60 * 1000);
+  setInterval(
+    () => {
+      global.metrics.responseTime = [];
+      global.metrics.requestCount = 0;
+    },
+    60 * 60 * 1000
+  );
 }
 
 /**
@@ -55,9 +58,7 @@ export function getMetrics() {
   if (!global.metrics) return null;
 
   const times = global.metrics.responseTime;
-  const avg = times.length > 0 
-    ? times.reduce((a, b) => a + b, 0) / times.length 
-    : 0;
+  const avg = times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
 
   return {
     uptime: process.uptime(),

@@ -44,12 +44,15 @@ r.get('/', async (req, res) => {
     FROM now_p n JOIN crops c ON c.id=n.crop_id LEFT JOIN old_p o ON o.crop_id=n.crop_id
     ORDER BY c.id LIMIT 4`);
 
-  const recent = await q(`
+  const recent = await q(
+    `
     SELECT l.id, l.quantity, l.unit, l.price_per_unit, l.status, l.image_urls,
            c.name_en AS crop, rg.name AS region
     FROM listings l JOIN crops c ON c.id=l.crop_id JOIN regions rg ON rg.id=l.region_id
     WHERE ($2::boolean OR l.farmer_id=$1) AND ($2::boolean = FALSE OR l.status='active')
-    ORDER BY l.created_at DESC LIMIT 5`, [req.user.id, !farmer]);
+    ORDER BY l.created_at DESC LIMIT 5`,
+    [req.user.id, !farmer]
+  );
 
   res.json({ stats, prices, recent });
 });
