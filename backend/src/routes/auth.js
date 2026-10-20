@@ -13,6 +13,7 @@ const phoneRegex = /^(09|07)\d{8}$/;
 // Registration schema
 const registerSchema = z.object({
   phone: z.string().regex(phoneRegex, 'Phone must start with 09 or 07 and be 10 digits'),
+  email: z.string().email('Invalid email address').optional(),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   full_name: z.string().min(2, 'Full name must be at least 2 characters').max(100),
   role: z.enum(['farmer', 'buyer'], {
@@ -22,11 +23,17 @@ const registerSchema = z.object({
   preferred_lang: z.enum(['en', 'am', 'om']).default('en')
 });
 
-// Login schema
-const loginSchema = z.object({
-  phone: z.string().regex(phoneRegex, 'Invalid phone number format'),
-  password: z.string().min(1, 'Password is required')
-});
+// Login schema - allows either phone or email
+const loginSchema = z.union([
+  z.object({
+    phone: z.string().regex(phoneRegex, 'Invalid phone number format'),
+    password: z.string().min(1, 'Password is required')
+  }),
+  z.object({
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(1, 'Password is required')
+  })
+]);
 
 /**
  * POST /api/auth/register
@@ -42,7 +49,7 @@ r.post('/register', async (req, res) => {
       });
     }
 
-    const { phone, password, full_name, role, region_id, preferred_lang } = parsed.data;
+    const { phone, email, password, full_name, role, region_id, preferred_lang } = parsed.data;
 
     // Check rate limiting by IP
     const rateLimitCheck = checkRateLimit(req.ip, 5, 15 * 60 * 1000);
@@ -51,9 +58,17 @@ r.post('/register', async (req, res) => {
     }
 
     // Check if phone number already exists
-    const [existing] = await q('SELECT id FROM users WHERE phone=$1', [phone]);
-    if (existing) {
+    const [existingPhone] = await q('SELECT id FROM users WHERE phone=$1', [phone]);
+    if (existingPhone) {
       return res.status(409).json({ error: 'This phone number is already registered.' });
+    }
+
+    // Check if email already exists (if provided)
+    if (email) {
+      const [existingEmail] = await q('SELECT id FROM users WHERE email=$1', [email]);
+      if (existingEmail) {
+        return res.status(409).json({ error: 'This email address is already registered.' });
+      }
     }
 
     // Validate region exists if provided
@@ -69,10 +84,10 @@ r.post('/register', async (req, res) => {
 
     // Insert new user
     const [user] = await q(
-      `INSERT INTO users(phone, password_hash, full_name, role, region_id, preferred_lang, is_verified, is_active)
-       VALUES($1, $2, $3, $4, $5, $6, FALSE, TRUE)
-       RETURNING id, phone, full_name, role, region_id, preferred_lang, is_verified, is_active, created_at`,
-      [phone, hashedPassword, full_name, role, region_id || null, preferred_lang]
+      `INSERT INTO users(phone, email, password_hash, full_name, role, region_id, preferred_lang, is_verified, is_active)
+       VALUES($1, $2, $3, $4, $5, $6, $7, FALSE, TRUE)
+       RETURNING id, phone, email, full_name, role, region_id, preferred_lang, is_verified, is_active, created_at`,
+      [phone, email || null, hashedPassword, full_name, role, region_id || null, preferred_lang]
     );
 
     // Generate JWT token
@@ -90,6 +105,7 @@ r.post('/register', async (req, res) => {
       user: {
         id: user.id,
         phone: user.phone,
+        email: user.email,
         full_name: user.full_name,
         role: user.role,
         region_id: user.region_id,
@@ -100,7 +116,7 @@ r.post('/register', async (req, res) => {
       token
     });
 
-    console.log(`✅ New ${role} registered: ${phone}`);
+    console.log(`✅ New ${role} registered: ${phone}${email ? ` (${email})` : ''}`);
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed. Please try again.' });
@@ -109,7 +125,7 @@ r.post('/register', async (req, res) => {
 
 /**
  * POST /api/auth/login
- * Login with phone and password
+ * Login with phone/email and password
  */
 r.post('/login', async (req, res) => {
   try {
@@ -121,7 +137,7 @@ r.post('/login', async (req, res) => {
       });
     }
 
-    const { phone, password } = parsed.data;
+    const { phone, email, password } = req.body;
 
     // Check rate limiting by IP
     const rateLimitCheck = checkRateLimit(req.ip, 10, 15 * 60 * 1000);
@@ -129,17 +145,27 @@ r.post('/login', async (req, res) => {
       return res.status(429).json({ error: rateLimitCheck.message });
     }
 
-    // Find user by phone
-    const [user] = await q(
-      `SELECT id, phone, password_hash, full_name, role, region_id, preferred_lang, 
-              is_verified, is_active, created_at, last_login
-       FROM users WHERE phone=$1`,
-      [phone]
-    );
+    // Find user by phone or email
+    let user;
+    if (phone) {
+      [user] = await q(
+        `SELECT id, phone, email, password_hash, full_name, role, region_id, preferred_lang, 
+                is_verified, is_active, created_at, last_login
+         FROM users WHERE phone=$1`,
+        [phone]
+      );
+    } else if (email) {
+      [user] = await q(
+        `SELECT id, phone, email, password_hash, full_name, role, region_id, preferred_lang, 
+                is_verified, is_active, created_at, last_login
+         FROM users WHERE email=$1`,
+        [email]
+      );
+    }
 
     if (!user) {
       // Use generic error message to prevent user enumeration
-      return res.status(401).json({ error: 'Invalid phone number or password.' });
+      return res.status(401).json({ error: 'Invalid credentials.' });
     }
 
     // Check if account is active
@@ -152,7 +178,7 @@ r.post('/login', async (req, res) => {
     // Verify password
     const validPassword = await bcrypt.compare(password, user.password_hash);
     if (!validPassword) {
-      return res.status(401).json({ error: 'Invalid phone number or password.' });
+      return res.status(401).json({ error: 'Invalid credentials.' });
     }
 
     // Update last login timestamp
@@ -166,6 +192,7 @@ r.post('/login', async (req, res) => {
       user: {
         id: user.id,
         phone: user.phone,
+        email: user.email,
         full_name: user.full_name,
         role: user.role,
         region_id: user.region_id,
@@ -176,7 +203,7 @@ r.post('/login', async (req, res) => {
       token
     });
 
-    console.log(`✅ User logged in: ${phone} (${user.role})`);
+    console.log(`✅ User logged in: ${phone || email} (${user.role})`);
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Login failed. Please try again.' });

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Leaf } from 'lucide-react';
+import { Leaf, Mail, Phone } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 
 export default function Login() {
   const { user, save } = useAuth();
   const [mode, setMode] = useState('login');
+  const [loginMethod, setLoginMethod] = useState('phone');
   const [regions, setRegions] = useState([]);
   const [f, setF] = useState({ role: 'farmer', preferred_lang: 'en' });
   const [err, setErr] = useState('');
@@ -22,7 +23,10 @@ export default function Login() {
     setErr(''); setBusy(true);
     try {
       const body = mode === 'login'
-        ? { phone: f.phone, password: f.password }
+        ? { 
+            [loginMethod]: loginMethod === 'phone' ? f.phone : f.email,
+            password: f.password 
+          }
         : { ...f, region_id: f.region_id ? +f.region_id : undefined };
       save(await api.post(`/auth/${mode}`, body));
     } catch (x) { setErr(x.message); }
@@ -50,9 +54,57 @@ export default function Login() {
       <section className="auth-form">
         <form className="form" onSubmit={submit}>
           <h2>{mode === 'login' ? 'Welcome back' : 'Create your account'}</h2>
+          
+          {mode === 'login' && (
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+              <button
+                type="button"
+                className={`btn ${loginMethod === 'phone' ? 'primary' : ''}`}
+                style={{ flex: 1, padding: '10px 14px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                onClick={() => setLoginMethod('phone')}
+              >
+                <Phone size={16} />
+                Phone
+              </button>
+              <button
+                type="button"
+                className={`btn ${loginMethod === 'email' ? 'primary' : ''}`}
+                style={{ flex: 1, padding: '10px 14px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                onClick={() => setLoginMethod('email')}
+              >
+                <Mail size={16} />
+                Email
+              </button>
+            </div>
+          )}
+
           {mode === 'register' && <input placeholder="Full name" onChange={set('full_name')} required />}
-          <input placeholder="Phone (09...)" onChange={set('phone')} required />
+          
+          {mode === 'login' ? (
+            loginMethod === 'phone' ? (
+              <input 
+                placeholder="Phone (09...)" 
+                onChange={set('phone')} 
+                type="tel"
+                required 
+              />
+            ) : (
+              <input 
+                placeholder="Email address" 
+                onChange={set('email')} 
+                type="email"
+                required 
+              />
+            )
+          ) : (
+            <>
+              <input placeholder="Phone (09...)" onChange={set('phone')} type="tel" required />
+              <input placeholder="Email (optional)" onChange={set('email')} type="email" />
+            </>
+          )}
+
           <input type="password" placeholder="Password" onChange={set('password')} required />
+          
           {mode === 'register' && (
             <>
               <select onChange={set('role')}>
