@@ -25,9 +25,9 @@ export async function initializeElasticsearch() {
       auth:
         process.env.ELASTICSEARCH_USER && process.env.ELASTICSEARCH_PASSWORD
           ? {
-              username: process.env.ELASTICSEARCH_USER,
-              password: process.env.ELASTICSEARCH_PASSWORD
-            }
+            username: process.env.ELASTICSEARCH_USER,
+            password: process.env.ELASTICSEARCH_PASSWORD
+          }
           : undefined,
       maxRetries: 3,
       requestTimeout: 10000

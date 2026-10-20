@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, AreaChart, Area, BarChart, Bar, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, Wifi, WifiOff, Activity, DollarSign, Calendar, MapPin, Award, AlertCircle, ArrowUpRight, ArrowDownRight, BarChart3 } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, AreaChart, Area, BarChart, Bar } from 'recharts';
+import { TrendingUp, TrendingDown, Wifi, WifiOff, Activity, DollarSign, Calendar, MapPin, Award, AlertCircle, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { usePriceUpdates } from '../hooks/useWebSocket.js';

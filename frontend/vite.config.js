@@ -9,14 +9,7 @@ export default defineConfig({
       // Enable Fast Refresh for instant HMR
       fastRefresh: true,
       // Optimize JSX runtime
-      jsxRuntime: 'automatic',
-      // Babel optimizations
-      babel: {
-        plugins: [
-          // Remove PropTypes in production
-          ['babel-plugin-transform-remove-console', { exclude: ['error', 'warn'] }]
-        ]
-      }
+      jsxRuntime: 'automatic'
     }),
     // Gzip compression for production
     compression({
@@ -56,8 +49,7 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'charts': ['recharts'],
           'icons': ['lucide-react'],
-          'socket': ['socket.io-client'],
-          'validation': ['zod']
+          'socket': ['socket.io-client']
         },
         // Optimize chunk naming for better caching
         chunkFileNames: 'assets/[name]-[hash].js',
@@ -103,8 +95,7 @@ export default defineConfig({
       'react-router-dom', 
       'recharts', 
       'lucide-react', 
-      'socket.io-client',
-      'zod'
+      'socket.io-client'
     ],
     // Exclude large dependencies that don't need pre-bundling
     exclude: []

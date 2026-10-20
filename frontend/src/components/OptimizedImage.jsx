@@ -3,7 +3,7 @@
  * Lazy loading with IntersectionObserver, placeholder, and error handling
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function OptimizedImage({ 
   src, 

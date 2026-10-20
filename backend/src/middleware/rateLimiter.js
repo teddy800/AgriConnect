@@ -57,9 +57,9 @@ export const generalLimiter = rateLimit({
   skipSuccessfulRequests,
   store: redisClient
     ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:general:'
-      })
+      client: redisClient,
+      prefix: 'rl:general:'
+    })
     : undefined
 });
 
@@ -84,9 +84,9 @@ export const authLimiter = rateLimit({
   },
   store: redisClient
     ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:auth:'
-      })
+      client: redisClient,
+      prefix: 'rl:auth:'
+    })
     : undefined
 });
 
@@ -108,9 +108,9 @@ export const registerLimiter = rateLimit({
   },
   store: redisClient
     ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:register:'
-      })
+      client: redisClient,
+      prefix: 'rl:register:'
+    })
     : undefined
 });
 
@@ -126,9 +126,9 @@ export const uploadLimiter = rateLimit({
   handler: rateLimitHandler,
   store: redisClient
     ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:upload:'
-      })
+      client: redisClient,
+      prefix: 'rl:upload:'
+    })
     : undefined
 });
 
@@ -145,9 +145,9 @@ export const searchLimiter = rateLimit({
   skipSuccessfulRequests: true,
   store: redisClient
     ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:search:'
-      })
+      client: redisClient,
+      prefix: 'rl:search:'
+    })
     : undefined
 });
 
@@ -163,9 +163,9 @@ export const priceLimiter = rateLimit({
   handler: rateLimitHandler,
   store: redisClient
     ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:price:'
-      })
+      client: redisClient,
+      prefix: 'rl:price:'
+    })
     : undefined
 });
 
@@ -181,9 +181,9 @@ export const adminLimiter = rateLimit({
   handler: rateLimitHandler,
   store: redisClient
     ? new RedisStore({
-        client: redisClient,
-        prefix: 'rl:admin:'
-      })
+      client: redisClient,
+      prefix: 'rl:admin:'
+    })
     : undefined
 });
 
@@ -202,9 +202,9 @@ export function createRateLimiter(options = {}) {
     store:
       redisClient && options.useRedis !== false
         ? new RedisStore({
-            client: redisClient,
-            prefix: options.prefix || 'rl:custom:'
-          })
+          client: redisClient,
+          prefix: options.prefix || 'rl:custom:'
+        })
         : undefined
   });
 }

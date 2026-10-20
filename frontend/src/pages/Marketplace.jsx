@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { MapPin, Plus, Sprout, Wifi, WifiOff, Grid, List, Filter, TrendingUp, Star, Package, Search, X } from 'lucide-react';
+import { MapPin, Plus, Sprout, Wifi, WifiOff, Grid, List, Filter, Star, Package, Search, X } from 'lucide-react';
 import { api } from '../api.js';
 import { useAuth } from '../auth.jsx';
 import { useMarketplaceUpdates } from '../hooks/useWebSocket.js';

@@ -22,8 +22,9 @@ const upload = multer({
 const r = Router();
 
 r.post('/', auth, role('farmer'), upload.single('image'), (req, res) => {
-  if (!req.file)
+  if (!req.file) {
     return res.status(400).json({ error: 'Upload a JPG, PNG or WebP image under 2 MB.' });
+  }
   res.status(201).json({ url: `/uploads/${req.file.filename}` });
 });
 
