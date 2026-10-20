@@ -2,17 +2,64 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    
+    <!-- Performance & SEO -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#1B7F3B" />
+    <meta name="description" content="Connect Ethiopian farmers directly to buyers. Fair prices, transparent marketplace, real-time updates." />
+    <meta name="keywords" content="agriculture, farming, marketplace, Ethiopia, crops, prices, farmers" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="AgriConnect" />
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AgriConnect - Ethiopian Agricultural Marketplace" />
+    <meta property="og:description" content="Connect Ethiopian farmers directly to buyers. Fair prices, transparent marketplace." />
+    <meta property="og:image" content="/social-preview.jpg" />
+    <meta property="og:url" content="https://agriconnect.et" />
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    <!-- DNS Prefetch & Preconnect for faster font loading -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Font Loading with display=swap for better performance -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <!-- Preload critical resources -->
+    <link rel="modulepreload" href="/src/main.jsx" />
+    
     <title>AgriConnect - Ethiopian Agricultural Marketplace</title>
-    <meta name="description" content="Connect Ethiopian farmers directly to buyers. Fair prices, transparent marketplace, real-time updates." />
+    
+    <!-- Performance monitoring script -->
+    <script>
+      // Mark navigation start
+      window.performance && window.performance.mark && window.performance.mark('app_start');
+    </script>
   </head>
   <body>
+    <!-- App container -->
     <div id="root"></div>
+    
+    <!-- Main application script -->
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- No-JS fallback -->
+    <noscript>
+      <div style="padding: 40px; text-align: center; font-family: system-ui, sans-serif;">
+        <h1>JavaScript Required</h1>
+        <p>Please enable JavaScript to use AgriConnect.</p>
+      </div>
+    </noscript>
   </body>
 </html>

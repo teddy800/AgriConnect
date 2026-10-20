@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import compression from 'compression';
 import swaggerUi from 'swagger-ui-express';
 import logger, { httpLogger, stream } from './utils/logger.js';
 import { generalLimiter, authLimiter } from './middleware/rateLimiter.js';
@@ -82,6 +83,18 @@ app.use(
 // ============================================
 // Body Parsing & Sanitization
 // ============================================
+// Gzip/Deflate compression for all responses
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6, // Compression level (0-9, 6 is default balance)
+  threshold: 1024 // Only compress responses larger than 1KB
+}));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(sanitizeAll()); // XSS protection
