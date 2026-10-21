@@ -82,6 +82,7 @@ export async function auth(req, res, next) {
 
 /**
  * Role-based authorization middleware factory
+ * Automatically grants access to 'admin' role for all routes
  * @param {...string} allowedRoles - Roles that can access the route
  * @returns {Function} Express middleware
  */
@@ -89,6 +90,11 @@ export function role(...allowedRoles) {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required.' });
+    }
+
+    // Admin has access to everything
+    if (req.user.role === 'admin') {
+      return next();
     }
 
     if (!allowedRoles.includes(req.user.role)) {
