@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Store, Package, Inbox, TrendingUp, CloudSun, Lightbulb,
-  MessageCircle, User, Settings, Search, Bell, LogOut, Leaf
+  MessageCircle, User, Settings, Search, Bell, LogOut, Leaf, Shield
 } from 'lucide-react';
 import { useAuth } from '../auth.jsx';
 import { useT } from '../i18n.jsx';
@@ -18,6 +18,7 @@ const NAV = [
   ['/weather', 'Weather', CloudSun],
   ['/advisory', 'Advisory', Lightbulb],
   ['/messages', 'Messages', MessageCircle],
+  ['/admin', 'Admin Panel', Shield, false, 'admin'],
   ['/profile', 'Profile', User],
   ['/settings', 'Settings', Settings]
 ];

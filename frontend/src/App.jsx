@@ -18,6 +18,7 @@ const Profile = lazy(() => import('./pages/Profile.jsx'));
 const Settings = lazy(() => import('./pages/Settings.jsx'));
 const Notifications = lazy(() => import('./pages/Notifications.jsx'));
 const RBACDemo = lazy(() => import('./pages/RBACDemo.jsx'));
+const Admin = lazy(() => import('./pages/Admin.jsx'));
 
 // Removed unused Soon component - can be added back when needed
 
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="rbac" element={<RBACDemo />} />
+          <Route path="admin" element={<Admin />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
