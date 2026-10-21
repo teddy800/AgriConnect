@@ -280,7 +280,7 @@ export default function Marketplace() {
       {!loading && items.length > 0 && viewMode === 'grid' && (
         <div className="listing-grid">
           {shown.map(l => (
-            <article key={l.id} className="listing-card" style={{ position: 'relative' }}>
+            <article key={l.id} className="listing-card" style={{ position: 'relative', overflow: 'hidden' }}>
               {l.featured && (
                 <div style={{
                   position: 'absolute',
@@ -295,35 +295,77 @@ export default function Marketplace() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '4px',
-                  zIndex: 1
+                  zIndex: 1,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
                 }}>
                   <Star size={12} fill="#000" />
                   Featured
                 </div>
               )}
-              <CropThumb src={l.image_urls?.[0]} name={l.crop} />
-              <h3 style={{ fontSize: '16px', fontWeight: '800', marginTop: '8px' }}>{l.crop}</h3>
-              <span className="loc" style={{ fontSize: '13px' }}>
-                <MapPin size={13} /> {l.region}{l.location_detail ? `, ${l.location_detail}` : ''}
+              <div style={{ 
+                position: 'relative', 
+                width: '100%', 
+                paddingBottom: '75%', 
+                overflow: 'hidden', 
+                borderRadius: '10px',
+                background: 'var(--g100)'
+              }}>
+                <div style={{ 
+                  position: 'absolute', 
+                  top: 0, 
+                  left: 0, 
+                  width: '100%', 
+                  height: '100%' 
+                }}>
+                  <CropThumb src={l.image_urls?.[0]} name={l.crop} />
+                </div>
+              </div>
+              <h3 style={{ fontSize: '16px', fontWeight: '800', marginTop: '12px', color: 'var(--text)' }}>{l.crop}</h3>
+              <p style={{ 
+                fontSize: '14px', 
+                color: 'var(--muted)', 
+                marginTop: '4px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}>
+                {l.title}
+              </p>
+              <span className="loc" style={{ fontSize: '13px', marginTop: '8px', display: 'block' }}>
+                <MapPin size={13} /> {l.region}{l.location_detail ? `, ${l.location_detail.substring(0, 30)}...` : ''}
               </span>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '8px' }}>
-                <span className="muted" style={{ fontSize: '13px' }}>{num(l.quantity)} {l.unit}</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--g700)' }}>
+                  {num(l.quantity)} {l.unit}
+                </span>
                 {l.farmer_verified && (
                   <span style={{ 
                     background: 'var(--g100)', 
                     color: 'var(--g700)', 
                     fontSize: '11px', 
-                    padding: '2px 8px', 
+                    padding: '4px 8px', 
                     borderRadius: '6px',
-                    fontWeight: '600'
+                    fontWeight: '700',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '3px'
                   }}>
                     ✓ Verified
                   </span>
                 )}
               </div>
-              <span className="price-line" style={{ fontSize: '18px', marginTop: '12px' }}>
-                {etb(l.price_per_unit)} <span style={{ fontSize: '13px', fontWeight: '600' }}>/ {l.unit}</span>
-              </span>
+              <div style={{ 
+                borderTop: '1px solid var(--line)', 
+                marginTop: '12px', 
+                paddingTop: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <span className="price-line" style={{ fontSize: '20px', fontWeight: '800', color: 'var(--g700)' }}>
+                  {etb(l.price_per_unit)} <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--muted)' }}>/ {l.unit}</span>
+                </span>
+              </div>
               <Link className="btn primary block" to={`/marketplace/${l.id}`} style={{ marginTop: '12px' }}>
                 View Details
               </Link>
