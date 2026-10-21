@@ -12,6 +12,8 @@ export const PERMISSIONS = {
   LISTING_DELETE: 'listing:delete',
   LISTING_READ_ALL: 'listing:read:all',
   LISTING_MANAGE_ALL: 'listing:manage:all',
+  LISTING_APPROVE: 'listing:approve',
+  LISTING_FEATURE: 'listing:feature',
 
   // Inquiry Permissions
   INQUIRY_CREATE: 'inquiry:create',
@@ -19,28 +21,33 @@ export const PERMISSIONS = {
   INQUIRY_UPDATE: 'inquiry:update',
   INQUIRY_DELETE: 'inquiry:delete',
   INQUIRY_READ_ALL: 'inquiry:read:all',
+  INQUIRY_RESPOND: 'inquiry:respond',
 
   // Message Permissions
   MESSAGE_SEND: 'message:send',
   MESSAGE_READ: 'message:read',
   MESSAGE_DELETE: 'message:delete',
   MESSAGE_READ_ALL: 'message:read:all',
+  MESSAGE_BROADCAST: 'message:broadcast',
 
   // Price Permissions
   PRICE_READ: 'price:read',
   PRICE_CREATE: 'price:create',
   PRICE_UPDATE: 'price:update',
   PRICE_DELETE: 'price:delete',
+  PRICE_EXPORT: 'price:export',
 
   // Weather Permissions
   WEATHER_READ: 'weather:read',
   WEATHER_CREATE: 'weather:create',
+  WEATHER_UPDATE: 'weather:update',
 
   // Advisory Permissions
   ADVISORY_READ: 'advisory:read',
   ADVISORY_CREATE: 'advisory:create',
   ADVISORY_UPDATE: 'advisory:update',
   ADVISORY_DELETE: 'advisory:delete',
+  ADVISORY_PUBLISH: 'advisory:publish',
 
   // User Management Permissions
   USER_READ: 'user:read',
@@ -49,16 +56,21 @@ export const PERMISSIONS = {
   USER_READ_ALL: 'user:read:all',
   USER_MANAGE_ALL: 'user:manage:all',
   USER_VERIFY: 'user:verify',
+  USER_SUSPEND: 'user:suspend',
+  USER_ROLES_MANAGE: 'user:roles:manage',
 
   // Admin Permissions
   ADMIN_DASHBOARD: 'admin:dashboard',
   ADMIN_REPORTS: 'admin:reports',
   ADMIN_SETTINGS: 'admin:settings',
   ADMIN_LOGS: 'admin:logs',
+  ADMIN_AUDIT: 'admin:audit',
+  ADMIN_SYSTEM: 'admin:system',
 
   // Analytics Permissions
   ANALYTICS_VIEW: 'analytics:view',
   ANALYTICS_EXPORT: 'analytics:export',
+  ANALYTICS_ADVANCED: 'analytics:advanced',
 
   // Notification Permissions
   NOTIFICATION_READ: 'notification:read',
@@ -68,7 +80,12 @@ export const PERMISSIONS = {
   // Settings Permissions
   SETTINGS_READ: 'settings:read',
   SETTINGS_UPDATE: 'settings:update',
-  SETTINGS_MANAGE_ALL: 'settings:manage:all'
+  SETTINGS_MANAGE_ALL: 'settings:manage:all',
+
+  // Upload Permissions
+  UPLOAD_IMAGE: 'upload:image',
+  UPLOAD_DOCUMENT: 'upload:document',
+  UPLOAD_BULK: 'upload:bulk'
 };
 
 // Define role-based permission mappings
@@ -82,6 +99,7 @@ export const ROLE_PERMISSIONS = {
 
     // Inquiry permissions - Farmers can read inquiries about their listings
     PERMISSIONS.INQUIRY_READ,
+    PERMISSIONS.INQUIRY_RESPOND,
     PERMISSIONS.INQUIRY_UPDATE,
 
     // Message permissions
@@ -106,7 +124,11 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.NOTIFICATION_READ,
 
     // Basic analytics
-    PERMISSIONS.ANALYTICS_VIEW
+    PERMISSIONS.ANALYTICS_VIEW,
+
+    // Upload permissions
+    PERMISSIONS.UPLOAD_IMAGE,
+    PERMISSIONS.UPLOAD_DOCUMENT
   ],
 
   buyer: [
@@ -150,6 +172,7 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.ADVISORY_CREATE,
     PERMISSIONS.ADVISORY_UPDATE,
     PERMISSIONS.ADVISORY_DELETE,
+    PERMISSIONS.ADVISORY_PUBLISH,
 
     // Read access to listings and inquiries for advisory purposes
     PERMISSIONS.LISTING_READ,
@@ -161,15 +184,19 @@ export const ROLE_PERMISSIONS = {
     PERMISSIONS.MESSAGE_SEND,
     PERMISSIONS.MESSAGE_READ,
     PERMISSIONS.MESSAGE_READ_ALL,
+    PERMISSIONS.MESSAGE_BROADCAST,
 
-    // Market data access
+    // Market data access and management
     PERMISSIONS.PRICE_READ,
+    PERMISSIONS.PRICE_CREATE,
     PERMISSIONS.WEATHER_READ,
     PERMISSIONS.WEATHER_CREATE,
+    PERMISSIONS.WEATHER_UPDATE,
 
     // Profile management
     PERMISSIONS.USER_READ,
     PERMISSIONS.USER_UPDATE,
+    PERMISSIONS.USER_VERIFY,
 
     // Settings
     PERMISSIONS.SETTINGS_READ,
@@ -181,13 +208,25 @@ export const ROLE_PERMISSIONS = {
 
     // Analytics
     PERMISSIONS.ANALYTICS_VIEW,
-    PERMISSIONS.ANALYTICS_EXPORT
+    PERMISSIONS.ANALYTICS_EXPORT,
+
+    // Upload permissions
+    PERMISSIONS.UPLOAD_IMAGE,
+    PERMISSIONS.UPLOAD_DOCUMENT
   ],
 
   admin: [
     // Admin has ALL permissions
     ...Object.values(PERMISSIONS)
   ]
+};
+
+// Permission dependencies - some permissions require others
+const PERMISSION_DEPENDENCIES = {
+  [PERMISSIONS.LISTING_DELETE]: [PERMISSIONS.LISTING_UPDATE],
+  [PERMISSIONS.LISTING_APPROVE]: [PERMISSIONS.LISTING_READ_ALL],
+  [PERMISSIONS.USER_DELETE]: [PERMISSIONS.USER_MANAGE_ALL],
+  [PERMISSIONS.ADMIN_SYSTEM]: [PERMISSIONS.ADMIN_DASHBOARD]
 };
 
 /**
@@ -200,7 +239,17 @@ export function hasPermission(user, permission) {
   if (!user || !user.role) return false;
 
   const rolePermissions = ROLE_PERMISSIONS[user.role] || [];
-  return rolePermissions.includes(permission);
+
+  // Basic permission check
+  let hasBasicPermission = rolePermissions.includes(permission);
+
+  // Check permission dependencies
+  if (hasBasicPermission && PERMISSION_DEPENDENCIES[permission]) {
+    const deps = PERMISSION_DEPENDENCIES[permission];
+    hasBasicPermission = deps.every(dep => rolePermissions.includes(dep));
+  }
+
+  return hasBasicPermission;
 }
 
 /**
