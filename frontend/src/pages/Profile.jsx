@@ -54,9 +54,9 @@ export default function Profile() {
   const getRoleColor = (role) => {
     const colors = {
       farmer: { bg: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', text: 'Farmer' },
-      buyer: { bg: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)', text: 'Buyer' },
+      buyer: { bg: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)', text: 'Buyer' },
       agronomist: { bg: 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)', text: 'Agronomist' },
-      admin: { bg: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', text: 'Admin' }
+      admin: { bg: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)', text: 'Admin' }
     };
     return colors[role] || colors.farmer;
   };
