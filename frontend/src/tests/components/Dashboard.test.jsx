@@ -61,7 +61,7 @@ describe('Dashboard Component', () => {
     });
   });
 
-  it('should display loading state initially', () => {
+  it('should display loading state initially', async () => {
     const { api } = await import('../../api');
     api.get.mockImplementation(() => new Promise(() => {})); // Never resolves
 
