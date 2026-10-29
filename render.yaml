@@ -9,8 +9,8 @@ services:
     region: oregon
     plan: free
     branch: main
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && node src/server.js
+    buildCommand: npm install --prefix backend
+    startCommand: node backend/src/server.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -39,7 +39,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGIN
-        sync: false
+        value: https://agriconnect-frontend.onrender.com
       - key: REDIS_ENABLED
         value: false
       - key: ELASTICSEARCH_ENABLED
@@ -60,7 +60,7 @@ services:
     name: agriconnect-frontend
     env: static
     branch: main
-    buildCommand: cd frontend && npm install && npm run build
+    buildCommand: npm install --prefix frontend && npm run build --prefix frontend
     staticPublishPath: frontend/dist
     pullRequestPreviewsEnabled: true
     headers:
@@ -82,7 +82,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        sync: false
+        value: https://agriconnect-backend.onrender.com/api
     autoDeploy: true
 
 databases:
