@@ -59,8 +59,6 @@ services:
   - type: web
     name: agriconnect-frontend
     env: static
-    region: oregon
-    plan: starter
     branch: main
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
