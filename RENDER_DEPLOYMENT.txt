@@ -1,0 +1,187 @@
+🚀 AGRICONNECT RENDER DEPLOYMENT GUIDE
+========================================
+
+STEP 1: PREPARE REPOSITORY
+---------------------------
+1. Make sure all changes are committed to Git
+2. Push to GitHub:
+   
+   git add .
+   git commit -m "Production ready - Render deployment"
+   git push origin main
+
+STEP 2: CREATE RENDER ACCOUNT
+------------------------------
+1. Go to https://render.com
+2. Sign up with GitHub account (recommended)
+3. Authorize Render to access your repositories
+
+STEP 3: DEPLOY USING BLUEPRINT
+-------------------------------
+1. Click "New +" → "Blueprint"
+2. Connect your AgriConnect repository
+3. Render will detect render.yaml automatically
+4. Click "Apply" to create all services:
+   ✅ Backend API
+   ✅ Frontend Static Site
+   ✅ PostgreSQL Database
+
+STEP 4: CONFIGURE ENVIRONMENT VARIABLES
+----------------------------------------
+After deployment starts, update these in Render Dashboard:
+
+BACKEND SERVICE:
+1. Go to agriconnect-backend → Environment
+2. Add/Update:
+   - CORS_ORIGIN = https://agriconnect-frontend.onrender.com
+   - JWT_SECRET = (auto-generated, verify it's 64+ chars)
+   - OPENWEATHER_API_KEY = your_api_key_here (optional)
+
+FRONTEND SERVICE:
+1. Go to agriconnect-frontend → Environment
+2. Update:
+   - VITE_API_URL = https://agriconnect-backend.onrender.com/api
+   
+3. Click "Manual Deploy" → "Clear build cache & deploy"
+
+STEP 5: INITIALIZE DATABASE
+----------------------------
+Once backend is deployed:
+
+1. Go to agriconnect-backend → Shell
+2. Run database setup:
+   
+   cd backend
+   psql $DATABASE_URL -f db/schema.sql
+   psql $DATABASE_URL -f db/seed2_updated.sql
+   psql $DATABASE_URL -f db/admin_setup.sql
+
+3. Or connect via Render's PostgreSQL client
+
+STEP 6: UPDATE ADMIN PASSWORD
+------------------------------
+1. In Render Shell (backend service):
+   
+   cd backend
+   node -e "const bcrypt = require('bcryptjs'); console.log(bcrypt.hashSync('YOUR_NEW_PASSWORD', 10));"
+
+2. Copy the hash output
+
+3. In PostgreSQL:
+   
+   psql $DATABASE_URL
+   UPDATE users SET password_hash = 'PASTE_HASH_HERE' WHERE role = 'admin';
+   \q
+
+STEP 7: VERIFY DEPLOYMENT
+--------------------------
+1. Backend Health:
+   https://agriconnect-backend.onrender.com/api/health
+   Should return: {"ok":true,"status":"healthy"}
+
+2. Frontend:
+   https://agriconnect-frontend.onrender.com
+   Should load the application
+
+3. Test Login:
+   - Admin Phone: 0911111111
+   - Admin Email: admin@agriconnect.com
+   - Password: (your new password)
+
+STEP 8: CUSTOM DOMAIN (OPTIONAL)
+---------------------------------
+1. Buy domain (e.g., agriconnect.et)
+2. In Render Dashboard:
+   - Frontend service → Settings → Custom Domain
+   - Add: www.agriconnect.et
+3. Update DNS:
+   - CNAME: www → agriconnect-frontend.onrender.com
+4. Update backend CORS_ORIGIN to: https://www.agriconnect.et
+
+RENDER FREE TIER LIMITS
+------------------------
+✅ Backend: 750 hours/month free
+✅ Frontend: Unlimited bandwidth
+✅ Database: 1GB storage, 97 connection limit
+⚠️  Sleeps after 15 min inactivity (wakes in ~30s)
+💡 Upgrade to Starter ($7/mo) for always-on
+
+TROUBLESHOOTING
+---------------
+❌ Build Failed:
+   - Check build logs in Render dashboard
+   - Verify package.json has all dependencies
+   - Try "Clear build cache & deploy"
+
+❌ Database Connection Error:
+   - Verify DATABASE_URL is set correctly
+   - Check DB credentials in environment variables
+   - Ensure database is running (check status)
+
+❌ CORS Error:
+   - Update CORS_ORIGIN in backend to match frontend URL
+   - Redeploy backend after changing
+
+❌ 404 on Frontend Routes:
+   - Routes configured in render.yaml (rewrite to /index.html)
+   - Should work automatically
+
+❌ WebSocket Not Working:
+   - Render supports WebSocket on paid plans
+   - Free tier has limitations
+   - Upgrade for full WebSocket support
+
+MONITORING
+----------
+1. Render Dashboard: Monitor CPU, memory, requests
+2. Logs: View real-time logs in each service
+3. Metrics: Check response times and errors
+4. Alerts: Configure in Render settings
+
+BACKUP STRATEGY
+---------------
+1. Database: Render provides daily backups (Starter plan+)
+2. Manual: Use Render Shell to export:
+   pg_dump $DATABASE_URL > backup.sql
+
+DEPLOYMENT URLS
+---------------
+📱 Frontend: https://agriconnect-frontend.onrender.com
+🔧 Backend: https://agriconnect-backend.onrender.com
+📊 Admin: https://agriconnect-frontend.onrender.com/admin
+❤️  Health: https://agriconnect-backend.onrender.com/api/health
+📚 API Docs: https://agriconnect-backend.onrender.com/api-docs
+
+COST ESTIMATION
+---------------
+Free Tier:
+- Backend: $0 (750 hrs free)
+- Frontend: $0 (unlimited)
+- Database: $0 (1GB limit)
+Total: $0/month
+
+Starter (Recommended):
+- Backend: $7/month (always-on)
+- Frontend: $0
+- Database: $7/month (256MB RAM)
+Total: $14/month
+
+Professional:
+- Backend: $25/month
+- Frontend: $0
+- Database: $20/month (1GB RAM)
+Total: $45/month
+
+NEXT STEPS AFTER DEPLOYMENT
+----------------------------
+1. ✅ Change admin password
+2. ✅ Add custom domain
+3. ✅ Setup monitoring alerts
+4. ✅ Configure email service (optional)
+5. ✅ Configure SMS service (optional)
+6. ✅ Enable Redis (upgrade required)
+7. ✅ Test all features thoroughly
+8. ✅ Share with users!
+
+🎉 YOUR AGRICONNECT IS LIVE!
+=============================
