@@ -7,7 +7,7 @@ services:
     name: agriconnect-backend
     env: node
     region: oregon
-    plan: starter
+    plan: free
     branch: main
     buildCommand: cd backend && npm install
     startCommand: cd backend && node src/server.js
@@ -90,6 +90,6 @@ databases:
   - name: agriconnect-db
     databaseName: agriconnect_prod
     user: agriconnect_user
-    plan: starter
+    plan: free
     region: oregon
     ipAllowList: []
