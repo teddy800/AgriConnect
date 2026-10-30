@@ -9,8 +9,8 @@ services:
     region: oregon
     plan: free
     branch: main
-    buildCommand: npm install --prefix backend --legacy-peer-deps
-    startCommand: node backend/src/server.js
+    buildCommand: cd backend && npm install --legacy-peer-deps
+    startCommand: cd backend && node src/server.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -60,7 +60,7 @@ services:
     name: agriconnect-frontend
     env: static
     branch: main
-    buildCommand: npm install --prefix frontend --legacy-peer-deps && npm run build --prefix frontend
+    buildCommand: cd frontend && npm install --legacy-peer-deps && npm run build
     staticPublishPath: frontend/dist
     pullRequestPreviewsEnabled: true
     headers:
